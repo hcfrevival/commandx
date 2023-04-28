@@ -75,10 +75,17 @@ public final class RebootModule implements ICXModule {
         }).repeat(20L, 20L).run();
     }
 
+    /**=
+     * @return Time (in millis) until reboot
+     */
     public long getTimeUntilReboot() {
         return isRebootInProgress() ? rebootTime - Time.now() : rebootCommenceTime - Time.now();
     }
 
+    /**
+     * Start the reboot process with the provided amount of seconds
+     * @param countdownSeconds Time until reboot (in seconds)
+     */
     public void startReboot(int countdownSeconds) {
         setRebootTime(Time.now() + (countdownSeconds*1000L));
         setRebootInProgress(true);
@@ -86,11 +93,19 @@ public final class RebootModule implements ICXModule {
         Bukkit.broadcastMessage(REBOOT_PREFIX + "Server will restart in " + Time.convertToRemaining(countdownSeconds*1000L));
     }
 
+    /**
+     * Cancel the reboot in progress
+     */
     public void cancelReboot() {
         setRebootInProgress(false);
         Bukkit.broadcastMessage(REBOOT_PREFIX + "Server restart has been cancelled");
     }
 
+    /**
+     * Reschedule reboot to a named time
+     * @param timeStr Time string (1h30s5s)
+     * @param promise (Promise)
+     */
     public void rescheduleReboot(String timeStr, Promise promise) {
         final long ms;
         try {
@@ -110,6 +125,10 @@ public final class RebootModule implements ICXModule {
         promise.resolve();
     }
 
+    /**
+     * Print reboot info to a command sender
+     * @param sender Receiver
+     */
     public void printReboot(CommandSender sender) {
         sender.sendMessage(REBOOT_PREFIX + "The server is expected to restart in " + Time.convertToRemaining(getTimeUntilReboot()));
     }
