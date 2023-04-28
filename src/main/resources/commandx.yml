@@ -1,3 +1,6 @@
+reboot:
+  enabled: true
+  max_lifespan: 86400
 world:
   general:
     enabled: true
@@ -28,7 +31,6 @@ world:
       - PIG
       - COD
       - SALMON
-      - MOOSHROOM
       - GLOW_SQUID
       - RABBIT
       - PUFFERFISH

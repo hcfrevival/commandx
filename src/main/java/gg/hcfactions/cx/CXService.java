@@ -2,6 +2,7 @@ package gg.hcfactions.cx;
 
 import gg.hcfactions.cx.command.EssentialCommand;
 import gg.hcfactions.cx.command.MessageCommand;
+import gg.hcfactions.cx.command.RebootCommand;
 import gg.hcfactions.cx.command.ReloadCommand;
 import gg.hcfactions.cx.message.MessageManager;
 import gg.hcfactions.cx.modules.chat.ChatModule;
@@ -9,6 +10,7 @@ import gg.hcfactions.cx.modules.display.TablistModule;
 import gg.hcfactions.cx.modules.player.combat.*;
 import gg.hcfactions.cx.modules.player.items.ItemModificationModule;
 import gg.hcfactions.cx.modules.player.items.ItemVelocityModule;
+import gg.hcfactions.cx.modules.reboot.RebootModule;
 import gg.hcfactions.cx.modules.world.MobstackModule;
 import gg.hcfactions.cx.modules.world.WorldModule;
 import gg.hcfactions.libs.bukkit.AresPlugin;
@@ -21,17 +23,18 @@ public final class CXService implements IAresService {
 
     @Getter public MessageManager messageManager;
 
-    private AnimationModule animationModule;
-    private KnockbackModule knockbackModule;
-    private ItemVelocityModule itemVelocityModule;
-    private WorldModule worldModule;
-    private ChatModule chatModule;
-    private PotionLimitModule potionLimitModule;
-    private EnchantLimitModule enchantLimitModule;
-    private MobstackModule mobstackModule;
-    private ItemModificationModule itemModificationModule;
-    private RegenModule regenModule;
-    private TablistModule tablistModule;
+    @Getter public RebootModule rebootModule;
+    @Getter public AnimationModule animationModule;
+    @Getter public KnockbackModule knockbackModule;
+    @Getter public ItemVelocityModule itemVelocityModule;
+    @Getter public WorldModule worldModule;
+    @Getter public ChatModule chatModule;
+    @Getter public PotionLimitModule potionLimitModule;
+    @Getter public EnchantLimitModule enchantLimitModule;
+    @Getter public MobstackModule mobstackModule;
+    @Getter public ItemModificationModule itemModificationModule;
+    @Getter public RegenModule regenModule;
+    @Getter public TablistModule tablistModule;
 
     public CXService(AresPlugin plugin) {
         this.plugin = plugin;
@@ -42,6 +45,7 @@ public final class CXService implements IAresService {
         plugin.registerCommand(new EssentialCommand(this));
         plugin.registerCommand(new ReloadCommand(this));
         plugin.registerCommand(new MessageCommand(this));
+        plugin.registerCommand(new RebootCommand(this));
 
         messageManager = new MessageManager(this);
 
@@ -56,6 +60,7 @@ public final class CXService implements IAresService {
         mobstackModule = new MobstackModule(plugin);
         regenModule = new RegenModule(plugin);
         tablistModule = new TablistModule(plugin);
+        rebootModule = new RebootModule(plugin);
 
         animationModule.onEnable();
         knockbackModule.onEnable();
@@ -68,6 +73,7 @@ public final class CXService implements IAresService {
         mobstackModule.onEnable();
         regenModule.onEnable();
         tablistModule.onEnable();
+        rebootModule.onEnable();
     }
 
     @Override
@@ -83,6 +89,7 @@ public final class CXService implements IAresService {
         mobstackModule.onDisable();
         regenModule.onDisable();
         tablistModule.onDisable();
+        rebootModule.onDisable();
     }
 
     @Override
@@ -98,5 +105,6 @@ public final class CXService implements IAresService {
         mobstackModule.onReload();
         regenModule.onReload();
         tablistModule.onReload();
+        rebootModule.onReload();
     }
 }
