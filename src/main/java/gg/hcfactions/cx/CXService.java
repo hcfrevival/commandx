@@ -1,7 +1,9 @@
 package gg.hcfactions.cx;
 
 import gg.hcfactions.cx.command.EssentialCommand;
+import gg.hcfactions.cx.command.MessageCommand;
 import gg.hcfactions.cx.command.ReloadCommand;
+import gg.hcfactions.cx.message.MessageManager;
 import gg.hcfactions.cx.modules.chat.ChatModule;
 import gg.hcfactions.cx.modules.display.TablistModule;
 import gg.hcfactions.cx.modules.player.combat.*;
@@ -16,6 +18,8 @@ import lombok.Getter;
 public final class CXService implements IAresService {
     @Getter public final AresPlugin plugin;
     @Getter public final String name = "Command X";
+
+    @Getter public MessageManager messageManager;
 
     private AnimationModule animationModule;
     private KnockbackModule knockbackModule;
@@ -35,8 +39,11 @@ public final class CXService implements IAresService {
 
     @Override
     public void onEnable() {
-        plugin.registerCommand(new EssentialCommand());
+        plugin.registerCommand(new EssentialCommand(this));
         plugin.registerCommand(new ReloadCommand(this));
+        plugin.registerCommand(new MessageCommand(this));
+
+        messageManager = new MessageManager(this);
 
         animationModule = new AnimationModule(plugin);
         knockbackModule = new KnockbackModule(plugin);

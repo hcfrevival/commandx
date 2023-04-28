@@ -1,8 +1,13 @@
 package gg.hcfactions.cx.command;
 
 import gg.hcfactions.cx.CXPermissions;
+import gg.hcfactions.cx.CXService;
+import gg.hcfactions.cx.menu.InvseeMenu;
 import gg.hcfactions.libs.acf.BaseCommand;
 import gg.hcfactions.libs.acf.annotation.*;
+import gg.hcfactions.libs.bukkit.utils.Players;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.*;
 import org.bukkit.command.CommandSender;
@@ -10,7 +15,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+@AllArgsConstructor
 public final class EssentialCommand extends BaseCommand {
+    @Getter public final CXService service;
+
     @CommandAlias("world")
     @CommandPermission(CXPermissions.CX_MOD)
     @Description("Change your world")
@@ -149,5 +157,69 @@ public final class EssentialCommand extends BaseCommand {
 
         player.setGameMode(gamemode);
         player.sendMessage(ChatColor.YELLOW + "Your gamemode has been changed to " + ChatColor.BLUE + StringUtils.capitalize(gamemode.name().toLowerCase()));
+    }
+
+    @CommandAlias("clear")
+    @Description("Clear an inventory")
+    @Syntax("[username]")
+    @CommandCompletion("@players")
+    @CommandPermission(CXPermissions.CX_ADMIN)
+    public void onClearInventory(Player player, @Optional String username) {
+        if (username != null) {
+            final Player otherPlayer = Bukkit.getPlayer(username);
+            if (otherPlayer == null) {
+                player.sendMessage(ChatColor.RED + "Player not found");
+                return;
+            }
+
+            otherPlayer.getInventory().clear();
+            otherPlayer.getInventory().setArmorContents(null);
+            otherPlayer.sendMessage(ChatColor.YELLOW + "Your inventory was cleared by " +  ChatColor.BLUE + player.getName());
+            player.sendMessage(ChatColor.YELLOW + "You have cleared " + ChatColor.BLUE + otherPlayer.getName() + ChatColor.YELLOW + "'s inventory");
+            return;
+        }
+
+        player.getInventory().clear();
+        player.getInventory().setArmorContents(null);
+        player.sendMessage(ChatColor.YELLOW + "Your inventory has been cleared");
+    }
+
+    @CommandAlias("heal")
+    @Description("Heal a player")
+    @Syntax("[username]")
+    @CommandCompletion("@players")
+    @CommandPermission(CXPermissions.CX_ADMIN)
+    public void onHeal(Player player, @Optional String username) {
+        if (username != null) {
+            final Player otherPlayer = Bukkit.getPlayer(username);
+            if (otherPlayer == null) {
+                player.sendMessage(ChatColor.RED + "Player not found");
+                return;
+            }
+
+            Players.resetHealth(otherPlayer);
+            otherPlayer.sendMessage(ChatColor.YELLOW + "You have been healed by " + ChatColor.BLUE + player.getName());
+            player.sendMessage(ChatColor.YELLOW + "You have healed " + ChatColor.BLUE + otherPlayer.getName());
+            return;
+        }
+
+        Players.resetHealth(player);
+        player.sendMessage(ChatColor.YELLOW + "You have been healed");
+    }
+
+    @CommandAlias("invsee")
+    @Description("Spectate a players inventory")
+    @CommandCompletion("@players")
+    @Syntax("<username>")
+    @CommandPermission(CXPermissions.CX_ADMIN)
+    public void onInvsee(Player player, String username) {
+        final Player otherPlayer = Bukkit.getPlayer(username);
+        if (otherPlayer == null) {
+            player.sendMessage(ChatColor.RED + "Player not found");
+            return;
+        }
+
+        final InvseeMenu menu = new InvseeMenu(service, player, otherPlayer);
+        menu.open();
     }
 }
