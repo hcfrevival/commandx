@@ -2,6 +2,7 @@ package gg.hcfactions.cx;
 
 import com.google.common.collect.Lists;
 import gg.hcfactions.cx.command.*;
+import gg.hcfactions.cx.kits.KitManager;
 import gg.hcfactions.cx.message.MessageManager;
 import gg.hcfactions.cx.modules.chat.ChatModule;
 import gg.hcfactions.cx.modules.display.TablistModule;
@@ -13,14 +14,10 @@ import gg.hcfactions.cx.modules.reboot.RebootModule;
 import gg.hcfactions.cx.modules.world.MobstackModule;
 import gg.hcfactions.cx.modules.world.WorldModule;
 import gg.hcfactions.cx.warp.WarpManager;
-import gg.hcfactions.libs.acf.BukkitCommandCompletionContext;
-import gg.hcfactions.libs.acf.CommandCompletions;
-import gg.hcfactions.libs.acf.InvalidCommandArgument;
 import gg.hcfactions.libs.bukkit.AresPlugin;
 import gg.hcfactions.libs.bukkit.services.IAresService;
 import lombok.Getter;
 
-import java.util.Collection;
 import java.util.List;
 
 public final class CXService implements IAresService {
@@ -30,6 +27,7 @@ public final class CXService implements IAresService {
     @Getter public MessageManager messageManager;
     @Getter public VanishManager vanishManager;
     @Getter public WarpManager warpManager;
+    @Getter public KitManager kitManager;
 
     @Getter public RebootModule rebootModule;
     @Getter public AnimationModule animationModule;
@@ -56,6 +54,7 @@ public final class CXService implements IAresService {
         plugin.registerCommand(new RebootCommand(this));
         plugin.registerCommand(new VanishCommand(this));
         plugin.registerCommand(new WarpCommand(this));
+        plugin.registerCommand(new KitCommand(this));
 
         messageManager = new MessageManager(this);
         vanishManager = new VanishManager(this);
@@ -63,10 +62,19 @@ public final class CXService implements IAresService {
         warpManager = new WarpManager(this);
         warpManager.loadWarps();
 
+        kitManager = new KitManager(this);
+        kitManager.loadKits();
+
         // command completions
         plugin.getCommandManager().getCommandCompletions().registerAsyncCompletion("warps", ctx -> {
             final List<String> names = Lists.newArrayList();
             warpManager.getWarpRepository().forEach(w -> names.add(w.getName()));
+            return names;
+        });
+
+        plugin.getCommandManager().getCommandCompletions().registerAsyncCompletion("kits", ctx -> {
+            final List<String> names = Lists.newArrayList();
+            kitManager.getKitRepository().forEach(k -> names.add(k.getName()));
             return names;
         });
 
