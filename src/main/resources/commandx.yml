@@ -1,0 +1,111 @@
+world:
+  general:
+    enabled: true
+    disable_piston_breaking_doors: true
+    disable_enderchests: true
+    disable_entity_block_changes: true
+    disable_explosive_exploits: true
+    disabled_entities:
+      - 'PHANTOM'
+    disabled_spawner_break:
+      - 'CREEPER'
+      - 'ENDERMAN'
+      - 'BLAZE'
+  mobstacking:
+    enabled: true
+    stack_interval: 5
+    stack_radius: 3
+    max_stack_size: 100
+    breeding_cooldown: 30
+    stack_nameplate_prefix: '&6x'
+    types:
+      - SKELETON
+      - ZOMBIE
+      - SPIDER
+      - CAVE_SPIDER
+      - COW
+      - CHICKEN
+      - PIG
+      - COD
+      - SALMON
+      - MOOSHROOM
+      - GLOW_SQUID
+      - RABBIT
+      - PUFFERFISH
+      - SHEEP
+      - SQUID
+      - TADPOLE
+      - TROPICAL_FISH
+      - TURTLE
+items:
+  velocity:
+    enabled: true
+    enderpearl: 1.4
+    potions: 0.5
+  modifications:
+    enabled: true
+    disable_chorus_fruit_teleport: true
+    disable_fishing_players: true
+    reduce_axe_damage:
+      enabled: true
+      reduction: 0.5
+combat:
+  regen:
+    enabled: true
+    heal_rate: 3
+  knockback:
+    enabled: true
+    values:
+      horizontal: 0.4
+      vertical: 0.4
+      vertical_limit: 0.4
+      extra_horizontal: 0.5
+      extra_vertical: 0.1
+  animation:
+    enabled: true
+    max_reach: 4.5
+    no_damage_ticks: 10
+  enchant_limits:
+    enabled: true
+    limits:
+      KNOCKBACK: 0
+  potion_limits:
+    enabled: true
+    limits:
+      HARMING:
+        enabled: false
+        amplifiable: false
+        extendable: false
+      SLOWNESS:
+        enabled: true
+        amplifiable: false
+        extendable: false
+      POISON:
+        enabled: true
+        amplifiable: false
+        extendable: false
+      REGENERATION:
+        enabled: false
+        amplifiable: false
+        extendable: false
+      WEAKNESS:
+        enabled: false
+        amplifiable: false
+        extendable: false
+chat:
+  enabled: true
+  disable_join_leave_messages: true
+  rate_limit:
+    enabled: true
+    delay: 1
+  whitelisted_links:
+    - 'discord.gg'
+    - 'youtube.com'
+    - 'twitch.tv'
+display:
+  tablist:
+    enabled: true
+    header:
+      - '&4&lHardcore Factions'
+    footer:
+      - '&bplay.hcfrevival.net'
