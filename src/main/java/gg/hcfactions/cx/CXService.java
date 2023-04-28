@@ -1,15 +1,13 @@
 package gg.hcfactions.cx;
 
-import gg.hcfactions.cx.command.EssentialCommand;
-import gg.hcfactions.cx.command.MessageCommand;
-import gg.hcfactions.cx.command.RebootCommand;
-import gg.hcfactions.cx.command.ReloadCommand;
+import gg.hcfactions.cx.command.*;
 import gg.hcfactions.cx.message.MessageManager;
 import gg.hcfactions.cx.modules.chat.ChatModule;
 import gg.hcfactions.cx.modules.display.TablistModule;
 import gg.hcfactions.cx.modules.player.combat.*;
 import gg.hcfactions.cx.modules.player.items.ItemModificationModule;
 import gg.hcfactions.cx.modules.player.items.ItemVelocityModule;
+import gg.hcfactions.cx.modules.player.vanish.VanishManager;
 import gg.hcfactions.cx.modules.reboot.RebootModule;
 import gg.hcfactions.cx.modules.world.MobstackModule;
 import gg.hcfactions.cx.modules.world.WorldModule;
@@ -22,6 +20,7 @@ public final class CXService implements IAresService {
     @Getter public final String name = "Command X";
 
     @Getter public MessageManager messageManager;
+    @Getter public VanishManager vanishManager;
 
     @Getter public RebootModule rebootModule;
     @Getter public AnimationModule animationModule;
@@ -46,8 +45,10 @@ public final class CXService implements IAresService {
         plugin.registerCommand(new ReloadCommand(this));
         plugin.registerCommand(new MessageCommand(this));
         plugin.registerCommand(new RebootCommand(this));
+        plugin.registerCommand(new VanishCommand(this));
 
         messageManager = new MessageManager(this);
+        vanishManager = new VanishManager(this);
 
         animationModule = new AnimationModule(plugin);
         knockbackModule = new KnockbackModule(plugin);
