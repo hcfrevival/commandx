@@ -136,6 +136,10 @@ public final class KnockbackModule implements ICXModule, Listener {
         final Player damaged = event.getDamaged();
         final Player damager = event.getDamager();
 
+        if (damaged.getUniqueId().equals(damager.getUniqueId())) {
+            return;
+        }
+
         if (damaged.getNoDamageTicks() > damaged.getMaximumNoDamageTicks() / 2D) {
             return;
         }
