@@ -29,7 +29,7 @@ public final class PotionLimitModule implements ICXModule, Listener {
     @Getter public final String key;
     @Getter @Setter public boolean enabled;
 
-    private List<PotionLimit> potionLimits;
+    private final List<PotionLimit> potionLimits;
 
     public PotionLimitModule(AresPlugin plugin) {
         this.plugin = plugin;
