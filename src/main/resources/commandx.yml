@@ -58,11 +58,11 @@ combat:
   knockback:
     enabled: true
     values:
-      horizontal: 0.4
-      vertical: 0.4
+      horizontal: 0.35
+      vertical: 0.35
       vertical_limit: 0.4
-      extra_horizontal: 0.5
-      extra_vertical: 0.1
+      extra_horizontal: 0.425
+      extra_vertical: 0.085
   animation:
     enabled: true
     max_reach: 4.5

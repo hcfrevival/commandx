@@ -28,11 +28,11 @@ public final class KnockbackModule implements ICXModule, Listener {
     @Getter public final String key;
     @Getter @Setter public boolean enabled;
 
-    private double knockbackHorizontal = 0.4D;
-    private double knockbackVertical = 0.4D;
+    private double knockbackHorizontal = 0.35D;
+    private double knockbackVertical = 0.35D;
     private double knockbackVerticalLimit = 0.4D;
-    private double knockbackExtraVertical = 0.0D;
-    private double knockbackExtraHorizontal = 0.0D;
+    private double knockbackExtraVertical = 0.085D;
+    private double knockbackExtraHorizontal = 0.425D;
 
     private final Map<UUID, Vector> velocityCache;
     private final Set<UUID> recentlySprinted;
@@ -165,7 +165,7 @@ public final class KnockbackModule implements ICXModule, Listener {
         playerVelocity.setZ((playerVelocity.getZ() / 2) - (d1 / magnitude * knockbackHorizontal));
 
         // Calculate bonus knockback for sprinting or knockback enchantment levels
-        int i = attacker.getItemInHand().getEnchantmentLevel(Enchantment.KNOCKBACK);
+        int i = attacker.getInventory().getItemInMainHand().getEnchantmentLevel(Enchantment.KNOCKBACK);
 
         if (recentlySprinted.contains(damager.getUniqueId())) {
             i += 1;
