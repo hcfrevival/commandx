@@ -63,6 +63,7 @@ public final class WarpManager {
         conf.set(key + "z", warp.getZ());
         conf.set(key + "yaw", warp.getYaw());
         conf.set(key + "pitch", warp.getPitch());
+        conf.set(key + "world", warp.getWorldName());
 
         service.getPlugin().saveConfiguration("warps", conf);
     }
