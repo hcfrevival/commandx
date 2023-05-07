@@ -5,6 +5,7 @@ import gg.hcfactions.cx.CXService;
 import gg.hcfactions.cx.kits.impl.Kit;
 import gg.hcfactions.cx.kits.impl.KitExecutor;
 import lombok.Getter;
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 
@@ -13,6 +14,9 @@ import java.util.Objects;
 import java.util.Optional;
 
 public final class KitManager {
+    public static final String KIT_SIGN_IDENTIFIER = "[Kit]";
+    public static final String FORMATTED_KIT_SIGN_IDENTIFIER = ChatColor.DARK_GRAY + "[" + ChatColor.DARK_RED + "Kit" + ChatColor.DARK_GRAY + "]";
+
     @Getter public final CXService service;
     @Getter public final KitExecutor executor;
     @Getter public final List<Kit> kitRepository;

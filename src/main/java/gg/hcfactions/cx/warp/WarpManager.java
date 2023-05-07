@@ -5,6 +5,7 @@ import gg.hcfactions.cx.CXService;
 import gg.hcfactions.cx.warp.impl.Warp;
 import gg.hcfactions.cx.warp.impl.WarpExecutor;
 import lombok.Getter;
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.util.List;
@@ -12,6 +13,9 @@ import java.util.Objects;
 import java.util.Optional;
 
 public final class WarpManager {
+    public static final String WARP_SIGN_IDENTIFIER = "[Warp]";
+    public static final String FORMATTED_WARP_SIGN_IDENTIFIER = ChatColor.DARK_GRAY + "[" + ChatColor.BLUE + "Warp" + ChatColor.DARK_GRAY + "]";
+
     @Getter public final CXService service;
     @Getter public final WarpExecutor executor;
     @Getter public List<Warp> warpRepository;

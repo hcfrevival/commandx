@@ -3,6 +3,7 @@ package gg.hcfactions.cx;
 import com.google.common.collect.Lists;
 import gg.hcfactions.cx.command.*;
 import gg.hcfactions.cx.kits.KitManager;
+import gg.hcfactions.cx.listener.SignListener;
 import gg.hcfactions.cx.message.MessageManager;
 import gg.hcfactions.cx.modules.chat.ChatModule;
 import gg.hcfactions.cx.modules.display.TablistModule;
@@ -55,6 +56,8 @@ public final class CXService implements IAresService {
         plugin.registerCommand(new VanishCommand(this));
         plugin.registerCommand(new WarpCommand(this));
         plugin.registerCommand(new KitCommand(this));
+
+        plugin.registerListener(new SignListener(this));
 
         messageManager = new MessageManager(this);
         vanishManager = new VanishManager(this);
