@@ -5,19 +5,19 @@ import com.google.common.collect.Sets;
 import gg.hcfactions.cx.CXPermissions;
 import gg.hcfactions.cx.modules.ICXModule;
 import gg.hcfactions.libs.bukkit.AresPlugin;
-import io.papermc.paper.event.block.BlockBreakBlockEvent;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.CreatureSpawner;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.type.Gate;
 import org.bukkit.block.data.type.RespawnAnchor;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.FallingBlock;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -27,6 +27,7 @@ import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 import java.util.List;
@@ -41,6 +42,7 @@ public final class WorldModule implements ICXModule, Listener {
     private boolean disableEnderchests;
     private boolean disableEntityBlockChanges;
     private boolean disableExplosiveExploits;
+    private boolean allowPearlingThroughTraps;
     private Set<EntityType> disabledEntities;
     private Set<EntityType> disabledSpawnerBlockBreaks;
 
@@ -80,6 +82,7 @@ public final class WorldModule implements ICXModule, Listener {
         enabled = conf.getBoolean(getKey() + "enabled");
         disablePistonBreakingDoors = conf.getBoolean(getKey() + "disable_piston_breaking_doors");
         disableEnderchests = conf.getBoolean(getKey() + "disable_enderchests");
+        allowPearlingThroughTraps = conf.getBoolean(getKey() + "allow_pearling_through_traps");
         disableEntityBlockChanges = conf.getBoolean(getKey() + "disable_entity_block_changes");
         disableExplosiveExploits = conf.getBoolean(getKey() + "disable_explosive_exploits");
 
@@ -255,6 +258,40 @@ public final class WorldModule implements ICXModule, Listener {
         if (!player.hasPermission(CXPermissions.CX_ADMIN)) {
             player.sendMessage(ChatColor.RED + "End crystals are disabled");
             event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onProjectileHit(ProjectileHitEvent event) {
+        if (!isEnabled() || !allowPearlingThroughTraps) {
+            return;
+        }
+
+        final Projectile proj = event.getEntity();
+
+        if (!(proj instanceof EnderPearl)) {
+            return;
+        }
+
+        final Block hitBlock = event.getHitBlock();
+
+        if (hitBlock == null) {
+            return;
+        }
+
+        if (hitBlock.getType().equals(Material.TRIPWIRE)) {
+            event.setCancelled(true);
+        }
+
+        else if (hitBlock.getType().name().endsWith("_FENCE_GATE")) {
+            final BlockState state = hitBlock.getState();
+            final BlockData data = state.getBlockData();
+
+            if (data instanceof final Gate gate) {
+                if (gate.isOpen()) {
+                    event.setCancelled(true);
+                }
+            }
         }
     }
 }

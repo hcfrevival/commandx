@@ -8,6 +8,7 @@ import gg.hcfactions.cx.message.MessageManager;
 import gg.hcfactions.cx.modules.chat.ChatModule;
 import gg.hcfactions.cx.modules.display.TablistModule;
 import gg.hcfactions.cx.modules.player.combat.*;
+import gg.hcfactions.cx.modules.player.exploit.ExploitPatchModule;
 import gg.hcfactions.cx.modules.player.items.ItemModificationModule;
 import gg.hcfactions.cx.modules.player.items.ItemVelocityModule;
 import gg.hcfactions.cx.modules.player.vanish.VanishManager;
@@ -42,6 +43,7 @@ public final class CXService implements IAresService {
     @Getter public ItemModificationModule itemModificationModule;
     @Getter public RegenModule regenModule;
     @Getter public TablistModule tablistModule;
+    @Getter public ExploitPatchModule exploitPatchModule;
 
     public CXService(AresPlugin plugin) {
         this.plugin = plugin;
@@ -93,6 +95,7 @@ public final class CXService implements IAresService {
         regenModule = new RegenModule(plugin);
         tablistModule = new TablistModule(plugin);
         rebootModule = new RebootModule(plugin);
+        exploitPatchModule = new ExploitPatchModule(plugin);
 
         animationModule.onEnable();
         knockbackModule.onEnable();
@@ -106,6 +109,7 @@ public final class CXService implements IAresService {
         regenModule.onEnable();
         tablistModule.onEnable();
         rebootModule.onEnable();
+        exploitPatchModule.onEnable();
     }
 
     @Override
@@ -122,11 +126,13 @@ public final class CXService implements IAresService {
         regenModule.onDisable();
         tablistModule.onDisable();
         rebootModule.onDisable();
+        exploitPatchModule.onDisable();
     }
 
     @Override
     public void onReload() {
         warpManager.loadWarps();
+        kitManager.loadKits();
 
         animationModule.onReload();
         knockbackModule.onReload();
@@ -140,5 +146,6 @@ public final class CXService implements IAresService {
         regenModule.onReload();
         tablistModule.onReload();
         rebootModule.onReload();
+        exploitPatchModule.onReload();
     }
 }

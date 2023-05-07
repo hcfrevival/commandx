@@ -8,6 +8,7 @@ world:
     disable_enderchests: true
     disable_entity_block_changes: true
     disable_explosive_exploits: true
+    allow_pearling_through_traps: true
     disabled_entities:
       - 'PHANTOM'
     disabled_spawner_break:
@@ -94,6 +95,11 @@ combat:
         enabled: false
         amplifiable: false
         extendable: false
+exploit:
+  enabled: true
+  disable_pearl_clipping: true
+  disable_elytra_bouncing: true
+  elytra_bouncing_height: 3
 chat:
   enabled: true
   disable_join_leave_messages: true
