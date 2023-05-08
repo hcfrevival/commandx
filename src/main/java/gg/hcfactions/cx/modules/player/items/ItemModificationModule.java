@@ -4,14 +4,22 @@ import gg.hcfactions.cx.modules.ICXModule;
 import gg.hcfactions.libs.bukkit.AresPlugin;
 import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.inventory.InventoryAction;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerFishEvent;
+import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.inventory.ItemStack;
 
 public class ItemModificationModule implements ICXModule, Listener {
     @Getter public final AresPlugin plugin;
@@ -20,6 +28,7 @@ public class ItemModificationModule implements ICXModule, Listener {
 
     private boolean disableChorusFruitTeleport;
     private boolean disableFishingPlayers;
+    private boolean disableShield;
     private boolean reduceAxeDamage;
     private double reduceAxeDamagePercent;
 
@@ -48,6 +57,7 @@ public class ItemModificationModule implements ICXModule, Listener {
     private void loadConfig() {
         final YamlConfiguration conf = getConfig();
         this.enabled = conf.getBoolean(getKey() + "enabled");
+        this.disableShield = conf.getBoolean(getKey() + "disable_shields");
         this.disableChorusFruitTeleport = conf.getBoolean(getKey() + "disable_chorus_fruit_teleport");
         this.disableFishingPlayers = conf.getBoolean(getKey() + "disable_fishing_players");
         this.reduceAxeDamage = conf.getBoolean(getKey() + "reduce_axe_damage.enabled");
@@ -58,6 +68,66 @@ public class ItemModificationModule implements ICXModule, Listener {
     public void onReload() {
         loadConfig();
     }
+
+    @EventHandler
+    public void onHandSwap(PlayerSwapHandItemsEvent event) {
+        if (!isEnabled() || !disableShield) {
+            return;
+        }
+
+        final Player player = event.getPlayer();
+        final ItemStack item = event.getOffHandItem();
+
+        if (item == null || !item.getType().equals(Material.SHIELD)) {
+            return;
+        }
+
+        player.sendMessage(ChatColor.RED + "This item can not be moved to your off-hand");
+        event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onInventoryDrag(InventoryDragEvent event) {
+        if (!isEnabled() || !disableShield) {
+            return;
+        }
+
+        if (!(event.getWhoClicked() instanceof final Player player)) {
+            return;
+        }
+
+        for (Integer i : event.getNewItems().keySet()) {
+            final ItemStack item = event.getNewItems().get(i);
+
+            if (i == 45 && item.getType().equals(Material.SHIELD)) {
+                event.setCancelled(true);
+                player.sendMessage(ChatColor.RED + "This item can not be moved to your off-hand");
+                return;
+            }
+        }
+    }
+
+    @EventHandler
+    public void onInventoryClick(InventoryClickEvent event) {
+        if (!isEnabled() || !disableShield) {
+            return;
+        }
+
+        if (!(event.getWhoClicked() instanceof final Player player)) {
+            return;
+        }
+
+        final ItemStack item = event.getCurrentItem();
+        if (item == null || !item.getType().equals(Material.SHIELD)) {
+            return;
+        }
+
+        if (event.getAction().equals(InventoryAction.MOVE_TO_OTHER_INVENTORY)) {
+            player.sendMessage(ChatColor.RED + "This item can not be moved to your off-hand");
+            event.setCancelled(true);
+        }
+    }
+
 
     @EventHandler
     public void onPlayerTeleport(PlayerTeleportEvent event) {

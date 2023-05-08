@@ -11,6 +11,7 @@ world:
     allow_pearling_through_traps: true
     disabled_entities:
       - 'PHANTOM'
+      - 'ENDERMITE'
     disabled_spawner_break:
       - 'CREEPER'
       - 'ENDERMAN'
@@ -49,6 +50,7 @@ items:
     enabled: true
     disable_chorus_fruit_teleport: true
     disable_fishing_players: true
+    disable_shields: true
     reduce_axe_damage:
       enabled: true
       reduction: 0.5
