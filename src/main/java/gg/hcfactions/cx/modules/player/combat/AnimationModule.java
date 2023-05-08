@@ -130,7 +130,7 @@ public final class AnimationModule implements ICXModule, Listener {
                         return;
                     }
 
-                    if (!damager.getGameMode().equals(GameMode.SURVIVAL)) {
+                    if (entity instanceof Player && !((Player)entity).getGameMode().equals(GameMode.SURVIVAL)) {
                         return;
                     }
 
@@ -150,7 +150,7 @@ public final class AnimationModule implements ICXModule, Listener {
                             return;
                         }
 
-                        double initialDamage = damager.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).getValue();
+                        double initialDamage = Objects.requireNonNull(damager.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE)).getValue();
                         boolean criticalHit = false;
 
                         if (!((LivingEntity) damager).isOnGround() && damager.getVelocity().getY() < 0) {
