@@ -7,8 +7,11 @@ import gg.hcfactions.libs.bukkit.AresPlugin;
 import gg.hcfactions.libs.bukkit.events.impl.PlayerDamagePlayerEvent;
 import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -28,6 +31,7 @@ public final class KnockbackModule implements ICXModule, Listener {
     @Getter public final String key;
     @Getter @Setter public boolean enabled;
 
+    private boolean requireGroundCheck = false;
     private double knockbackHorizontal = 0.35D;
     private double knockbackVertical = 0.35D;
     private double knockbackVerticalLimit = 0.4D;
@@ -46,13 +50,7 @@ public final class KnockbackModule implements ICXModule, Listener {
 
     @Override
     public void onEnable() {
-        final YamlConfiguration conf = getConfig();
-        enabled = conf.getBoolean(getKey() + "enabled");
-        knockbackHorizontal = conf.getDouble(getKey() + "values.horizontal");
-        knockbackVertical = conf.getDouble(getKey() + "values.vertical");
-        knockbackExtraVertical = conf.getDouble(getKey() + "values.extra_vertical");
-        knockbackExtraHorizontal = conf.getDouble(getKey() + "values.extra_horizontal");
-        knockbackVerticalLimit = conf.getDouble(getKey() + "values.vertical_limit");
+        loadConfig();
 
         if (!isEnabled()) {
             return;
@@ -71,8 +69,13 @@ public final class KnockbackModule implements ICXModule, Listener {
 
     @Override
     public void onReload() {
+        loadConfig();
+    }
+
+    private void loadConfig() {
         final YamlConfiguration conf = getConfig();
         enabled = conf.getBoolean(getKey() + "enabled");
+        requireGroundCheck = conf.getBoolean(getKey() + "ground_check");
         knockbackHorizontal = conf.getDouble(getKey() + "values.horizontal");
         knockbackVertical = conf.getDouble(getKey() + "values.vertical");
         knockbackExtraVertical = conf.getDouble(getKey() + "values.vertical_extra");
@@ -89,6 +92,10 @@ public final class KnockbackModule implements ICXModule, Listener {
         final Player player = event.getPlayer();
 
         if (event.isSprinting()) {
+            if (requireGroundCheck && !((LivingEntity)player).isOnGround()) {
+                return;
+            }
+
             recentlySprinted.add(player.getUniqueId());
             return;
         }

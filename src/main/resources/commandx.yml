@@ -60,6 +60,7 @@ combat:
     heal_rate: 3
   knockback:
     enabled: true
+    ground_check: true
     values:
       horizontal: 0.35
       vertical: 0.35
