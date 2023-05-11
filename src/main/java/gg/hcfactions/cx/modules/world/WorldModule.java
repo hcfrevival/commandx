@@ -243,13 +243,13 @@ public final class WorldModule implements ICXModule, Listener {
     }
 
     @EventHandler
-    public void onEndCrystalBlockPlace(BlockPlaceEvent event) {
+    public void onBlockPlace(BlockPlaceEvent event) {
         if (!isEnabled() || !disableExplosiveExploits) {
             return;
         }
 
-        final Block block = event.getBlock();
         final Player player = event.getPlayer();
+        final Block block = event.getBlock();
 
         if (!block.getType().equals(Material.END_CRYSTAL)) {
             return;
