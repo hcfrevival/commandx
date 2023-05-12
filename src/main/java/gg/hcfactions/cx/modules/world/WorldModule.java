@@ -27,6 +27,7 @@ import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
+import org.bukkit.event.entity.ExplosionPrimeEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
@@ -243,20 +244,12 @@ public final class WorldModule implements ICXModule, Listener {
     }
 
     @EventHandler
-    public void onBlockPlace(BlockPlaceEvent event) {
+    public void onExplosionPrime(ExplosionPrimeEvent event) {
         if (!isEnabled() || !disableExplosiveExploits) {
             return;
         }
 
-        final Player player = event.getPlayer();
-        final Block block = event.getBlock();
-
-        if (!block.getType().equals(Material.END_CRYSTAL)) {
-            return;
-        }
-
-        if (!player.hasPermission(CXPermissions.CX_ADMIN)) {
-            player.sendMessage(ChatColor.RED + "End crystals are disabled");
+        if (event.getEntity() instanceof EnderCrystal) {
             event.setCancelled(true);
         }
     }
