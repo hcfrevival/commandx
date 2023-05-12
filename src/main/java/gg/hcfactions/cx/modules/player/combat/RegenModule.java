@@ -78,8 +78,11 @@ public final class RegenModule implements ICXModule, Listener {
             return;
         }
 
-        event.setCancelled(true);
+        final float preExhaustion = player.getExhaustion();
+        final float preSaturation = player.getSaturation();
         final double maxHealth = player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
+
+        event.setCancelled(true);
 
         if (player.getHealth() < maxHealth && !recentlyHealed.contains(player.getUniqueId())) {
             player.setHealth(Math.min(player.getHealth() + 1.0, maxHealth));
@@ -87,12 +90,9 @@ public final class RegenModule implements ICXModule, Listener {
             new Scheduler(plugin).sync(() -> recentlyHealed.remove(player.getUniqueId())).delay(healRate * 20L).run();
         }
 
-        final float exhaustion = player.getExhaustion();
-        final float saturation = player.getSaturation();
-
         new Scheduler(plugin).sync(() -> {
-            player.setExhaustion(exhaustion + 1);
-            player.setSaturation(saturation - 1);
+            player.setExhaustion(preExhaustion + 0.2F);
+            player.setSaturation(preSaturation - 0.2F);
         }).delay(1L).run();
     }
 }
