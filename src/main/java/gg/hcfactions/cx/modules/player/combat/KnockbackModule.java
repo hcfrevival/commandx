@@ -2,13 +2,14 @@ package gg.hcfactions.cx.modules.player.combat;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import gg.hcfactions.cx.command.KnockbackCommand;
 import gg.hcfactions.cx.modules.ICXModule;
 import gg.hcfactions.libs.bukkit.AresPlugin;
 import gg.hcfactions.libs.bukkit.events.impl.PlayerDamagePlayerEvent;
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.LivingEntity;
@@ -23,6 +24,7 @@ import org.bukkit.event.player.PlayerVelocityEvent;
 import org.bukkit.util.Vector;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -31,12 +33,12 @@ public final class KnockbackModule implements ICXModule, Listener {
     @Getter public final String key;
     @Getter @Setter public boolean enabled;
 
-    private boolean requireGroundCheck = false;
-    private double knockbackHorizontal = 0.35D;
-    private double knockbackVertical = 0.35D;
-    private double knockbackVerticalLimit = 0.4D;
-    private double knockbackExtraVertical = 0.085D;
-    private double knockbackExtraHorizontal = 0.425D;
+    @Getter @Setter public boolean requireGroundCheck = false;
+    @Getter @Setter public double knockbackHorizontal = 0.35D;
+    @Getter @Setter public double knockbackVertical = 0.35D;
+    @Getter @Setter public double knockbackVerticalLimit = 0.4D;
+    @Getter @Setter public double knockbackExtraVertical = 0.085D;
+    @Getter @Setter public double knockbackExtraHorizontal = 0.425D;
 
     private final Map<UUID, Vector> velocityCache;
     private final Set<UUID> recentlySprinted;
@@ -56,6 +58,7 @@ public final class KnockbackModule implements ICXModule, Listener {
             return;
         }
 
+        plugin.registerCommand(new KnockbackCommand(this));
         plugin.registerListener(this);
     }
 
@@ -78,9 +81,19 @@ public final class KnockbackModule implements ICXModule, Listener {
         requireGroundCheck = conf.getBoolean(getKey() + "ground_check");
         knockbackHorizontal = conf.getDouble(getKey() + "values.horizontal");
         knockbackVertical = conf.getDouble(getKey() + "values.vertical");
-        knockbackExtraVertical = conf.getDouble(getKey() + "values.vertical_extra");
-        knockbackExtraHorizontal = conf.getDouble(getKey() + "values.horizontal_extra");
+        knockbackExtraVertical = conf.getDouble(getKey() + "values.extra_vertical");
+        knockbackExtraHorizontal = conf.getDouble(getKey() + "values.extra_horizontal");
         knockbackVerticalLimit = conf.getDouble(getKey() + "values.vertical_limit");
+    }
+
+    public void saveConfig() {
+        final YamlConfiguration conf = getConfig();
+        conf.set(getKey() + "values.horizontal", getKnockbackHorizontal());
+        conf.set(getKey() + "values.vertical", getKnockbackVertical());
+        conf.set(getKey() + "values.extra_vertical", getKnockbackExtraVertical());
+        conf.set(getKey() + "values.extra_horizontal", getKnockbackExtraHorizontal());
+        conf.set(getKey() + "values.vertical_limit", getKnockbackVerticalLimit());
+        plugin.saveConfiguration("commandx", conf);
     }
 
     /**
@@ -143,6 +156,12 @@ public final class KnockbackModule implements ICXModule, Listener {
         final Player damaged = event.getDamaged();
         final Player damager = event.getDamager();
 
+        for (AttributeModifier attr : Objects.requireNonNull(damaged.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE)).getModifiers()) {
+            if (damaged.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE) != null) {
+                Objects.requireNonNull(damaged.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE)).removeModifier(attr);
+            }
+        }
+
         if (damaged.getUniqueId().equals(damager.getUniqueId())) {
             return;
         }
@@ -151,7 +170,7 @@ public final class KnockbackModule implements ICXModule, Listener {
             return;
         }
 
-        Player attacker = (Player) event.getDamager();
+        Player attacker = event.getDamager();
 
         // Figure out base knockback direction
         double d0 = attacker.getLocation().getX() - damaged.getLocation().getX();
