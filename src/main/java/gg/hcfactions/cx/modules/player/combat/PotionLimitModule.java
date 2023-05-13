@@ -8,6 +8,7 @@ import gg.hcfactions.libs.bukkit.remap.ERemappedEffect;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -104,7 +105,7 @@ public final class PotionLimitModule implements ICXModule, Listener {
 
         for (PotionEffect effect : event.getPotion().getEffects()) {
             final PotionLimit limit = getPotionLimit(effect.getType());
-            final boolean extended = effect.getDuration() >= 90;
+            final boolean extended = effect.getDuration() >= 90*20;
 
             if (limit == null) {
                 continue;

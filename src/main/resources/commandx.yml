@@ -79,23 +79,23 @@ combat:
     enabled: true
     limits:
       HARMING:
-        enabled: false
+        disabled: true
         amplifiable: false
         extendable: false
       SLOWNESS:
-        enabled: true
+        disabled: false
         amplifiable: false
         extendable: false
       POISON:
-        enabled: true
+        disabled: false
         amplifiable: false
         extendable: false
       REGENERATION:
-        enabled: false
+        disabled: true
         amplifiable: false
         extendable: false
       WEAKNESS:
-        enabled: false
+        disabled: true
         amplifiable: false
         extendable: false
 exploit:
