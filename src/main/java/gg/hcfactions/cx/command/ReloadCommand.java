@@ -38,6 +38,7 @@ public final class ReloadCommand extends BaseCommand {
     @CommandPermission(CXPermissions.CX_ADMIN)
     public void onReloadLimits(Player player) {
         service.getEnchantLimitModule().onReload();
+        service.getPotionLimitModule().onReload();
         player.sendMessage(ChatColor.YELLOW + "Reloaded enchant/potion limits module");
     }
 
