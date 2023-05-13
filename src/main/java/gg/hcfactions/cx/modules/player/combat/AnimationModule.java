@@ -179,7 +179,7 @@ public final class AnimationModule implements ICXModule, Listener {
         }
 
         final Player player = event.getPlayer();
-        Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_ATTACK_SPEED)).setBaseValue(1024.0);
+        Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_ATTACK_SPEED)).setBaseValue(2048.0);
         player.saveData();
     }
 
@@ -205,7 +205,7 @@ public final class AnimationModule implements ICXModule, Listener {
         }
 
         final Player player = event.getPlayer();
-        Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_ATTACK_SPEED)).setBaseValue(1024.0);
+        Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_ATTACK_SPEED)).setBaseValue(2048.0);
         player.saveData();
     }
 
