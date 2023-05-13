@@ -222,4 +222,114 @@ public final class EssentialCommand extends BaseCommand {
         final InvseeMenu menu = new InvseeMenu(service, player, otherPlayer);
         menu.open();
     }
+
+    /*
+        /tp johnsama - teleport to player
+        /tp johnsama Symotic - teleport player to player
+        /tp 100 100 100 - teleport to specific coordinates in current world
+        /tp 100 100 100 world - teleport to specific coordinates in specific world
+        /tpall - teleport all players on the server to current location
+     */
+
+    @CommandAlias("teleport|tp")
+    @Description("Teleport to a player")
+    @Syntax("<name>")
+    @CommandCompletion("@players")
+    @CommandPermission(CXPermissions.CX_MOD)
+    public void onTeleport(Player player, String username) {
+        final Player otherPlayer = Bukkit.getPlayer(username);
+
+        if (otherPlayer == null) {
+            player.sendMessage(ChatColor.RED + "Player not found");
+            return;
+        }
+
+        player.teleport(otherPlayer);
+        player.sendMessage(ChatColor.YELLOW + "Teleported to " + ChatColor.BLUE + otherPlayer.getName());
+    }
+
+    @CommandAlias("teleport|tp")
+    @Description("Teleport a player to another player")
+    @Syntax("<name> <name>")
+    @CommandCompletion("@players")
+    @CommandPermission(CXPermissions.CX_MOD)
+    public void onTeleport(Player player, String username, String otherUsername) {
+        final Player fromPlayer = Bukkit.getPlayer(username);
+        final Player toPlayer = Bukkit.getPlayer(otherUsername);
+
+        if (fromPlayer == null) {
+            player.sendMessage(ChatColor.RED + username + " not found");
+            return;
+        }
+
+        if (toPlayer == null) {
+            player.sendMessage(ChatColor.RED + otherUsername + " not found");
+            return;
+        }
+
+        fromPlayer.teleport(toPlayer);
+        fromPlayer.sendMessage(ChatColor.YELLOW + "You have been teleported to " + ChatColor.BLUE + toPlayer.getName());
+    }
+
+    @CommandAlias("teleport|tp")
+    @Description("Teleport to specific coordinates in your current world")
+    @Syntax("<x> <y> <z>")
+    @CommandPermission(CXPermissions.CX_MOD)
+    public void onTeleport(Player player, String namedX, String namedY, String namedZ) {
+        double x, y, z;
+        try {
+            x = Double.parseDouble(namedX);
+            y = Double.parseDouble(namedY);
+            z = Double.parseDouble(namedZ);
+        } catch (NumberFormatException e) {
+            player.sendMessage(ChatColor.RED + "Invalid coordinates");
+            return;
+        }
+
+        final Location location = new Location(player.getWorld(), x, y, z);
+        player.teleport(location);
+        player.sendMessage(ChatColor.YELLOW + "Teleported to " + ChatColor.BLUE + x + ", " + y + ", " + z + ChatColor.YELLOW + " in " + ChatColor.BLUE + player.getWorld().getName());
+    }
+
+    @CommandAlias("teleport|tp")
+    @Description("Teleport to specific coordinates in a specific world")
+    @Syntax("<x> <y> <z> [world]")
+    @CommandCompletion("@worlds")
+    @CommandPermission(CXPermissions.CX_MOD)
+    public void onTeleport(Player player, String namedX, String namedY, String namedZ, String namedWorld) {
+        final World world = Bukkit.getWorld(namedWorld);
+
+        if (world == null) {
+            player.sendMessage(ChatColor.RED + "World not found");
+            return;
+        }
+
+        double x, y, z;
+        try {
+            x = Double.parseDouble(namedX);
+            y = Double.parseDouble(namedY);
+            z = Double.parseDouble(namedZ);
+        } catch (NumberFormatException e) {
+            player.sendMessage(ChatColor.RED + "Invalid coordinates");
+            return;
+        }
+
+        final Location location = new Location(world, x, y, z);
+        player.teleport(location);
+        player.sendMessage(ChatColor.YELLOW + "Teleported to " + ChatColor.BLUE + x + ", " + y + ", " + z + ChatColor.YELLOW + " in " + ChatColor.BLUE + world.getName());
+    }
+
+    @CommandAlias("tpall")
+    @Description("Teleport all players in the server to your current location")
+    @CommandPermission(CXPermissions.CX_ADMIN)
+    public void onTeleportAll(Player player) {
+        Bukkit.getOnlinePlayers().forEach(p -> {
+            if (!p.getUniqueId().equals(player.getUniqueId())) {
+                p.teleport(player);
+                p.sendMessage(ChatColor.YELLOW + "You have been teleported to " + ChatColor.BLUE + player.getName());
+            }
+        });
+
+        player.sendMessage(ChatColor.YELLOW + "Teleported " + ChatColor.BLUE + Bukkit.getOnlinePlayers().size() + " players" + ChatColor.YELLOW + " to your current location");
+    }
 }
