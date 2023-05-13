@@ -332,7 +332,7 @@ public final class EssentialCommand extends BaseCommand {
             }
         });
 
-        player.sendMessage(ChatColor.YELLOW + "Teleported " + ChatColor.BLUE + Bukkit.getOnlinePlayers().size() + " players" + ChatColor.YELLOW + " to your current location");
+        player.sendMessage(ChatColor.YELLOW + "Teleported " + ChatColor.BLUE + (Bukkit.getOnlinePlayers().size() - 1) + " players" + ChatColor.YELLOW + " to your current location");
     }
 
     @CommandAlias("enchant|enchantment")
