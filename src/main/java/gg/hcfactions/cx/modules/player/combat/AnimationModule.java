@@ -79,7 +79,12 @@ public final class AnimationModule implements ICXModule, Listener {
         attackQueueTask = new Scheduler(plugin).sync(() -> {
             while (!queuedAttacks.isEmpty()) {
                 final QueuedAttack attack = queuedAttacks.remove();
-                attack.getAttacked().damage(attack.getDamage(), attack.getAttacker());
+
+                if (!attackCooldowns.contains(attack.getAttacked().getUniqueId())) {
+                    attackCooldowns.add(attack.getAttacked().getUniqueId());
+                    attack.getAttacked().damage(attack.getDamage(), attack.getAttacker());
+                    new Scheduler(plugin).sync(() -> attackCooldowns.remove(attack.getAttacked().getUniqueId())).delay(noDamageTicks).run();
+                }
             }
         }).repeat(0L, 1L).run();
 
@@ -135,7 +140,6 @@ public final class AnimationModule implements ICXModule, Listener {
                     }
 
                     if (entity instanceof final LivingEntity damaged) {
-                        final UUID damagedUniqueId = damaged.getUniqueId();
                         final double distance = damager.getLocation().distanceSquared(damaged.getLocation());
 
                         if (damaged.isDead()) {
@@ -143,10 +147,6 @@ public final class AnimationModule implements ICXModule, Listener {
                         }
 
                         if (distance > (maxReach * maxReach)) {
-                            return;
-                        }
-
-                        if (attackCooldowns.contains(damagedUniqueId)) {
                             return;
                         }
 
@@ -159,9 +159,6 @@ public final class AnimationModule implements ICXModule, Listener {
                         }
 
                         queuedAttacks.add(new QueuedAttack(damager, damaged, initialDamage, criticalHit));
-                        attackCooldowns.add(damagedUniqueId);
-
-                        new Scheduler(plugin).async(() -> attackCooldowns.remove(damagedUniqueId)).delay(noDamageTicks).run();
                     }
                 }).run();
             }
