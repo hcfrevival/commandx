@@ -5,12 +5,14 @@ import gg.hcfactions.cx.CXService;
 import gg.hcfactions.cx.menu.InvseeMenu;
 import gg.hcfactions.libs.acf.BaseCommand;
 import gg.hcfactions.libs.acf.annotation.*;
+import gg.hcfactions.libs.bukkit.remap.ERemappedEnchantment;
 import gg.hcfactions.libs.bukkit.utils.Players;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.*;
 import org.bukkit.command.CommandSender;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -331,5 +333,57 @@ public final class EssentialCommand extends BaseCommand {
         });
 
         player.sendMessage(ChatColor.YELLOW + "Teleported " + ChatColor.BLUE + Bukkit.getOnlinePlayers().size() + " players" + ChatColor.YELLOW + " to your current location");
+    }
+
+    @CommandAlias("enchant|enchantment")
+    @Description("Enchant item(s)")
+    @CommandPermission(CXPermissions.CX_ADMIN)
+    @CommandCompletion("@enchants")
+    @Syntax("<enchantment> <level> [-a]")
+    public void onEnchant(Player player, String enchantmentName, String levelName, @Optional String flag) {
+        final Enchantment enchantment = ERemappedEnchantment.getEnchantment(enchantmentName);
+
+        if (enchantment == null) {
+            player.sendMessage(ChatColor.RED + "Enchantment not found");
+            return;
+        }
+
+        int level;
+        try {
+            level = Integer.parseInt(levelName);
+        } catch (NumberFormatException e) {
+            player.sendMessage(ChatColor.RED + "Invalid enchantment level (integer)");
+            return;
+        }
+
+        if (flag != null) {
+            if (!flag.equalsIgnoreCase("-a")) {
+                player.sendMessage(ChatColor.RED + "Invalid flag");
+                return;
+            }
+
+            for (ItemStack armor : player.getInventory().getArmorContents()) {
+                if (armor == null || armor.getType().equals(Material.AIR)) {
+                    continue;
+                }
+
+                armor.addUnsafeEnchantment(enchantment, level);
+                player.sendMessage(ChatColor.YELLOW + "Enchanted " + ChatColor.RESET + StringUtils.capitalize(armor.getType().name().replaceAll("_", " "))
+                        + ChatColor.YELLOW + " with " + ChatColor.BLUE + StringUtils.capitalize(enchantment.getKey().getKey()) + " " + level);
+            }
+
+            return;
+        }
+
+        final ItemStack hand = player.getInventory().getItemInMainHand();
+
+        if (hand.getType().equals(Material.AIR) || !hand.getType().isItem()) {
+            player.sendMessage(ChatColor.RED + "You are not holding a valid item");
+            return;
+        }
+
+        hand.addUnsafeEnchantment(enchantment, level);
+        player.sendMessage(ChatColor.YELLOW + "Enchanted " + ChatColor.RESET + StringUtils.capitalize(hand.getType().name().replaceAll("_", " "))
+                + ChatColor.YELLOW + " with " + ChatColor.BLUE + StringUtils.capitalize(enchantment.getKey().getKey()) + " " + level);
     }
 }

@@ -17,6 +17,7 @@ import gg.hcfactions.cx.modules.world.MobstackModule;
 import gg.hcfactions.cx.modules.world.WorldModule;
 import gg.hcfactions.cx.warp.WarpManager;
 import gg.hcfactions.libs.bukkit.AresPlugin;
+import gg.hcfactions.libs.bukkit.remap.ERemappedEnchantment;
 import gg.hcfactions.libs.bukkit.services.IAresService;
 import lombok.Getter;
 
@@ -80,6 +81,16 @@ public final class CXService implements IAresService {
         plugin.getCommandManager().getCommandCompletions().registerAsyncCompletion("kits", ctx -> {
             final List<String> names = Lists.newArrayList();
             kitManager.getKitRepository().forEach(k -> names.add(k.getName()));
+            return names;
+        });
+
+        plugin.getCommandManager().getCommandCompletions().registerAsyncCompletion("enchants", ctx -> {
+            final List<String> names = Lists.newArrayList();
+
+            for (ERemappedEnchantment remapped : ERemappedEnchantment.values()) {
+                names.add(remapped.name().toLowerCase());
+            }
+
             return names;
         });
 
