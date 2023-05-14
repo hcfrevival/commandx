@@ -270,6 +270,21 @@ public final class AnimationModule implements ICXModule, Listener {
         }
     }
 
+    @EventHandler (priority = EventPriority.MONITOR)
+    public void onNoDamageTickApplied(EntityDamageEvent event) {
+        final EntityDamageEvent.DamageCause cause = event.getCause();
+
+        if (!(event.getEntity() instanceof final Player player)) {
+            return;
+        }
+
+        if (!cause.equals(EntityDamageEvent.DamageCause.POISON) && !cause.equals(EntityDamageEvent.DamageCause.WITHER) && !cause.equals(EntityDamageEvent.DamageCause.FIRE_TICK)) {
+            return;
+        }
+
+        player.setNoDamageTicks(0);
+    }
+
     @AllArgsConstructor
     public final class QueuedAttack {
         @Getter public final Player attacker;
