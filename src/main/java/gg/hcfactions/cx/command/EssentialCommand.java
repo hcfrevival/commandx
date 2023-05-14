@@ -1,11 +1,16 @@
 package gg.hcfactions.cx.command;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import gg.hcfactions.cx.CXPermissions;
 import gg.hcfactions.cx.CXService;
 import gg.hcfactions.cx.menu.InvseeMenu;
 import gg.hcfactions.libs.acf.BaseCommand;
 import gg.hcfactions.libs.acf.annotation.*;
 import gg.hcfactions.libs.bukkit.remap.ERemappedEnchantment;
+import gg.hcfactions.libs.bukkit.services.impl.ranks.RankService;
+import gg.hcfactions.libs.bukkit.services.impl.ranks.model.impl.AresRank;
 import gg.hcfactions.libs.bukkit.utils.Players;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,6 +21,10 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 
 @AllArgsConstructor
 public final class EssentialCommand extends BaseCommand {
@@ -385,5 +394,31 @@ public final class EssentialCommand extends BaseCommand {
         hand.addUnsafeEnchantment(enchantment, level);
         player.sendMessage(ChatColor.YELLOW + "Enchanted " + ChatColor.RESET + StringUtils.capitalize(hand.getType().name().replaceAll("_", " "))
                 + ChatColor.YELLOW + " with " + ChatColor.BLUE + StringUtils.capitalize(enchantment.getKey().getKey()) + " " + level);
+    }
+
+    @CommandAlias("list")
+    @Description("List all online players")
+    public void onList(Player player) {
+        final RankService rankService = (RankService) service.getPlugin().getService(RankService.class);
+        final Map<AresRank, List<String>> res = Maps.newTreeMap(Comparator.comparingInt(AresRank::getWeight));
+
+        Bukkit.getOnlinePlayers().forEach(onlinePlayer -> {
+            if (player.canSee(onlinePlayer)) {
+                final AresRank rank = rankService.getHighestRank(onlinePlayer);
+
+                if (res.containsKey(rank)) {
+                    res.get(rank).add(onlinePlayer.getName());
+                } else {
+                    res.put(rank, Lists.newArrayList(onlinePlayer.getName()));
+                }
+            }
+        });
+
+        // There is 64 players online
+        final List<String> result = Lists.newArrayList();
+        res.forEach((rank, usernames) -> usernames.forEach(name -> result.add(rank.getPrefix() + name)));
+
+        player.sendMessage(ChatColor.YELLOW + "There is " + ChatColor.BLUE + result.size() + " player" + (result.size() > 1 ? "s" : "") + ChatColor.YELLOW + " online");
+        player.sendMessage(Joiner.on(ChatColor.RESET + ", ").join(result));
     }
 }
