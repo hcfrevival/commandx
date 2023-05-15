@@ -401,12 +401,15 @@ public final class EssentialCommand extends BaseCommand {
     public void onList(Player player) {
         final RankService rankService = (RankService) service.getPlugin().getService(RankService.class);
         final Map<AresRank, List<String>> res = Maps.newTreeMap(Comparator.comparingInt(AresRank::getWeight));
+        final List<String> defaultNames = Lists.newArrayList();
 
         Bukkit.getOnlinePlayers().forEach(onlinePlayer -> {
             if (player.canSee(onlinePlayer)) {
                 final AresRank rank = rankService.getHighestRank(onlinePlayer);
 
-                if (res.containsKey(rank)) {
+                if (rank == null) {
+                    defaultNames.add(onlinePlayer.getName());
+                } else if (res.containsKey(rank)) {
                     res.get(rank).add(onlinePlayer.getName());
                 } else {
                     res.put(rank, Lists.newArrayList(onlinePlayer.getName()));
@@ -414,11 +417,18 @@ public final class EssentialCommand extends BaseCommand {
             }
         });
 
-        // There is 64 players online
         final List<String> result = Lists.newArrayList();
-        res.forEach((rank, usernames) -> usernames.forEach(name -> result.add(rank.getPrefix() + name)));
+        final List<String> rankNames = Lists.newArrayList();
+
+        res.forEach((rank, usernames) -> {
+            rankNames.add(rank.getColor() + rank.getName());
+            usernames.forEach(name -> result.add(rank.getColor() + name));
+        });
+
+        result.addAll(defaultNames);
 
         player.sendMessage(ChatColor.YELLOW + "There is " + ChatColor.BLUE + result.size() + " player" + (result.size() > 1 ? "s" : "") + ChatColor.YELLOW + " online");
+        player.sendMessage(Joiner.on(ChatColor.RESET + ", ").join(rankNames));
         player.sendMessage(Joiner.on(ChatColor.RESET + ", ").join(result));
     }
 }
