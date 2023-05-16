@@ -1,0 +1,7 @@
+enabled: true
+prefix: '&7[&bTip&7]'
+interval: 60
+messages:
+  - '&6Example message 1'
+  - '&4Example message 2'
+  - '&2Example message 3'

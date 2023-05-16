@@ -1,6 +1,7 @@
 package gg.hcfactions.cx;
 
 import com.google.common.collect.Lists;
+import gg.hcfactions.cx.broadcasts.BroadcastManager;
 import gg.hcfactions.cx.command.*;
 import gg.hcfactions.cx.kits.KitManager;
 import gg.hcfactions.cx.listener.SignListener;
@@ -31,6 +32,7 @@ public final class CXService implements IAresService {
     @Getter public VanishManager vanishManager;
     @Getter public WarpManager warpManager;
     @Getter public KitManager kitManager;
+    @Getter public BroadcastManager broadcastManager;
 
     @Getter public RebootModule rebootModule;
     @Getter public AnimationModule animationModule;
@@ -64,6 +66,10 @@ public final class CXService implements IAresService {
 
         messageManager = new MessageManager(this);
         vanishManager = new VanishManager(this);
+
+        broadcastManager = new BroadcastManager(this);
+        broadcastManager.loadBroadcasts();
+        broadcastManager.startBroadcaster();
 
         warpManager = new WarpManager(this);
         warpManager.loadWarps();
@@ -144,6 +150,7 @@ public final class CXService implements IAresService {
     public void onReload() {
         warpManager.loadWarps();
         kitManager.loadKits();
+        broadcastManager.loadBroadcasts();
 
         animationModule.onReload();
         knockbackModule.onReload();
