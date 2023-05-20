@@ -22,6 +22,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -419,6 +420,9 @@ public final class EssentialCommand extends BaseCommand {
 
         final List<String> result = Lists.newArrayList();
         final List<String> rankNames = Lists.newArrayList();
+
+        Collections.reverse(rankNames);
+        Collections.reverse(result);
 
         res.forEach((rank, usernames) -> {
             rankNames.add(rank.getColor() + rank.getName());
