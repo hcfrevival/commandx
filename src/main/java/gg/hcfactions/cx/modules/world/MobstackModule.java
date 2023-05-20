@@ -90,8 +90,10 @@ public final class MobstackModule implements ICXModule, Listener {
 
     @Override
     public void onDisable() {
-        stackTickingTask.cancel();
-        stackTickingTask = null;
+        if (stackTickingTask != null) {
+            stackTickingTask.cancel();
+            stackTickingTask = null;
+        }
 
         setEnabled(false);
     }
