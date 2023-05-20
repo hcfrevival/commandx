@@ -77,18 +77,7 @@ public final class AnimationModule implements ICXModule, Listener {
         plugin.registerListener(this);
 
         implPacketListener();
-
-        attackQueueTask = new Scheduler(plugin).sync(() -> {
-            while (!queuedAttacks.isEmpty()) {
-                final QueuedAttack attack = queuedAttacks.remove();
-
-                if (!attackCooldowns.contains(attack.getAttacked().getUniqueId())) {
-                    attackCooldowns.add(attack.getAttacked().getUniqueId());
-                    attack.getAttacked().damage(attack.getDamage(), attack.getAttacker());
-                    new Scheduler(plugin).sync(() -> attackCooldowns.remove(attack.getAttacked().getUniqueId())).delay(noDamageTicks).run();
-                }
-            }
-        }).repeat(0L, 1L).run();
+        implQueueTask();
 
         this.enabled = true;
     }
@@ -98,6 +87,8 @@ public final class AnimationModule implements ICXModule, Listener {
         final YamlConfiguration conf = getConfig();
         maxReach = conf.getDouble(getKey() + "max_reach");
         noDamageTicks = conf.getInt(getKey() + "no_damage_ticks");
+
+        implQueueTask();
     }
 
     @Override
@@ -113,6 +104,25 @@ public final class AnimationModule implements ICXModule, Listener {
         PlayerChangedWorldEvent.getHandlerList().unregister(this);
 
         enabled = false;
+    }
+
+    private void implQueueTask() {
+        if (attackQueueTask != null) {
+            attackQueueTask.cancel();
+            attackQueueTask = null;
+        }
+
+        attackQueueTask = new Scheduler(plugin).sync(() -> {
+            while (!queuedAttacks.isEmpty()) {
+                final QueuedAttack attack = queuedAttacks.remove();
+
+                if (!attackCooldowns.contains(attack.attacked().getUniqueId())) {
+                    attackCooldowns.add(attack.attacked().getUniqueId());
+                    attack.attacked().damage(attack.damage(), attack.attacker());
+                    new Scheduler(plugin).sync(() -> attackCooldowns.remove(attack.attacked().getUniqueId())).delay(noDamageTicks).run();
+                }
+            }
+        }).repeat(0L, 1L).run();
     }
 
     private void implPacketListener() {
@@ -257,11 +267,10 @@ public final class AnimationModule implements ICXModule, Listener {
             event.setCancelled(true);
         }
 
-        if (!(damager instanceof Player) || entity instanceof Player) {
+        if (!(damager instanceof final Player player) || entity instanceof Player) {
             return;
         }
 
-        final Player player = (Player)damager;
         final ItemStack hand = player.getInventory().getItemInMainHand();
 
         if (player.getUniqueId().equals(entity.getUniqueId())) {
@@ -288,11 +297,8 @@ public final class AnimationModule implements ICXModule, Listener {
         player.setNoDamageTicks(0);
     }
 
-    @AllArgsConstructor
-    public final class QueuedAttack {
-        @Getter public final Player attacker;
-        @Getter public final LivingEntity attacked;
-        @Getter public final double damage;
-        @Getter public final boolean critical;
-    }
+    public record QueuedAttack(@Getter Player attacker,
+                               @Getter LivingEntity attacked,
+                               @Getter double damage,
+                               @Getter boolean critical) {}
 }
