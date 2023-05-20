@@ -13,10 +13,12 @@ import gg.hcfactions.cx.modules.ICXModule;
 import gg.hcfactions.libs.bukkit.AresPlugin;
 import gg.hcfactions.libs.bukkit.events.impl.PlayerDamagePlayerEvent;
 import gg.hcfactions.libs.bukkit.scheduler.Scheduler;
+import gg.hcfactions.libs.bukkit.utils.Worlds;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.GameMode;
+import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
@@ -156,6 +158,7 @@ public final class AnimationModule implements ICXModule, Listener {
                         if (!((LivingEntity) damager).isOnGround() && damager.getVelocity().getY() < 0) {
                             initialDamage *= 1.25;
                             criticalHit = true;
+                            Worlds.playSound(damaged.getLocation(), Sound.ENTITY_PLAYER_ATTACK_CRIT);
                         }
 
                         queuedAttacks.add(new QueuedAttack(damager, damaged, initialDamage, criticalHit));
