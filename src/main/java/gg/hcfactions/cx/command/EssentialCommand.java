@@ -425,14 +425,16 @@ public final class EssentialCommand extends BaseCommand {
         Collections.reverse(result);
 
         res.forEach((rank, usernames) -> {
-            rankNames.add(rank.getColor() + rank.getName());
+            rankNames.add(rank.getColor() + rank.getDisplayName());
             usernames.forEach(name -> result.add(rank.getColor() + name));
         });
 
         result.addAll(defaultNames);
 
-        player.sendMessage(ChatColor.YELLOW + "There is " + ChatColor.BLUE + result.size() + " player" + (result.size() > 1 ? "s" : "") + ChatColor.YELLOW + " online");
+        player.sendMessage(" ");
+        player.sendMessage(ChatColor.WHITE + "Player List (" + ChatColor.AQUA + result.size() + " online" + ChatColor.WHITE + ")");
         player.sendMessage(Joiner.on(ChatColor.RESET + ", ").join(rankNames));
         player.sendMessage(Joiner.on(ChatColor.RESET + ", ").join(result));
+        player.sendMessage(" ");
     }
 }
