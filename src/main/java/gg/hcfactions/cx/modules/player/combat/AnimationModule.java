@@ -8,13 +8,12 @@ import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.comphenix.protocol.wrappers.WrappedEnumEntityUseAction;
 import com.google.common.collect.Queues;
-import com.google.common.collect.Sets;
 import gg.hcfactions.cx.modules.ICXModule;
 import gg.hcfactions.libs.bukkit.AresPlugin;
 import gg.hcfactions.libs.bukkit.events.impl.PlayerDamagePlayerEvent;
 import gg.hcfactions.libs.bukkit.scheduler.Scheduler;
-import gg.hcfactions.libs.bukkit.utils.Worlds;
-import lombok.AllArgsConstructor;
+import gg.hcfactions.libs.bukkit.services.impl.account.AccountService;
+import gg.hcfactions.libs.bukkit.services.impl.account.model.AresAccount;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.GameMode;
@@ -38,8 +37,6 @@ import org.bukkit.scheduler.BukkitTask;
 
 import java.util.Objects;
 import java.util.Queue;
-import java.util.Set;
-import java.util.UUID;
 
 public final class AnimationModule implements ICXModule, Listener {
     @Getter public final AresPlugin plugin;
@@ -50,15 +47,15 @@ public final class AnimationModule implements ICXModule, Listener {
     private double maxReach;
     private int noDamageTicks;
 
+    private AccountService accountService;
     private BukkitTask attackQueueTask;
-    private final Set<UUID> attackCooldowns;
     private final Queue<QueuedAttack> queuedAttacks;
 
     public AnimationModule(AresPlugin plugin) {
         this.plugin = plugin;
         this.key = "combat.animation.";
         this.enabled = false;
-        this.attackCooldowns = Sets.newConcurrentHashSet();
+        this.accountService = null;
         this.queuedAttacks = Queues.newConcurrentLinkedQueue();
     }
 
@@ -69,24 +66,36 @@ public final class AnimationModule implements ICXModule, Listener {
             return;
         }
 
-        final YamlConfiguration conf = getConfig();
-        enabled = conf.getBoolean(getKey() + "enabled");
-        maxReach = conf.getDouble(getKey() + "max_reach");
-        noDamageTicks = conf.getInt(getKey() + "no_damage_ticks");
+        loadConfig();
 
-        plugin.registerListener(this);
+        if (!enabled) {
+            plugin.getAresLogger().error("animation module disabled");
+            return;
+        }
 
         implPacketListener();
         implQueueTask();
 
-        this.enabled = true;
+        accountService = (AccountService)plugin.getService(AccountService.class);
+        if (accountService == null) {
+            plugin.getAresLogger().error("failed to obtain Account Service, critical strike audio queue will not be played");
+        }
+
+        plugin.registerListener(this);
     }
 
     @Override
     public void onReload() {
-        final YamlConfiguration conf = getConfig();
-        maxReach = conf.getDouble(getKey() + "max_reach");
-        noDamageTicks = conf.getInt(getKey() + "no_damage_ticks");
+        loadConfig();
+
+        if (!enabled) {
+            if (attackQueueTask != null) {
+                attackQueueTask.cancel();
+                attackQueueTask = null;
+            }
+
+            return;
+        }
 
         implQueueTask();
     }
@@ -94,16 +103,25 @@ public final class AnimationModule implements ICXModule, Listener {
     @Override
     public void onDisable() {
         queuedAttacks.clear();
-        attackCooldowns.clear();
 
-        attackQueueTask.cancel();
-        attackQueueTask = null;
+        if (attackQueueTask != null) {
+            attackQueueTask.cancel();
+            attackQueueTask = null;
+        }
 
         PlayerJoinEvent.getHandlerList().unregister(this);
         PlayerQuitEvent.getHandlerList().unregister(this);
         PlayerChangedWorldEvent.getHandlerList().unregister(this);
+        EntityDamageEvent.getHandlerList().unregister(this);
 
         enabled = false;
+    }
+
+    private void loadConfig() {
+        final YamlConfiguration conf = getConfig();
+        enabled = conf.getBoolean(getKey() + "enabled");
+        maxReach = conf.getDouble(getKey() + "max_reach");
+        noDamageTicks = conf.getInt(getKey() + "no_damage_ticks");
     }
 
     private void implQueueTask() {
@@ -115,12 +133,7 @@ public final class AnimationModule implements ICXModule, Listener {
         attackQueueTask = new Scheduler(plugin).sync(() -> {
             while (!queuedAttacks.isEmpty()) {
                 final QueuedAttack attack = queuedAttacks.remove();
-
-                if (!attackCooldowns.contains(attack.attacked().getUniqueId())) {
-                    attackCooldowns.add(attack.attacked().getUniqueId());
-                    attack.attacked().damage(attack.damage(), attack.attacker());
-                    new Scheduler(plugin).sync(() -> attackCooldowns.remove(attack.attacked().getUniqueId())).delay(noDamageTicks).run();
-                }
+                attack.getAttacked().damage(attack.getDamage(), attack.getAttacker());
             }
         }).repeat(0L, 1L).run();
     }
@@ -168,7 +181,14 @@ public final class AnimationModule implements ICXModule, Listener {
                         if (!((LivingEntity) damager).isOnGround() && damager.getVelocity().getY() < 0) {
                             initialDamage *= 1.25;
                             criticalHit = true;
-                            Worlds.playSound(damaged.getLocation(), Sound.ENTITY_PLAYER_ATTACK_CRIT);
+
+                            if (accountService != null) {
+                                final AresAccount cachedAccount = accountService.getCachedAccount(damager.getUniqueId());
+
+                                if (cachedAccount != null && cachedAccount.getSettings().isEnabled(AresAccount.Settings.SettingValue.USE_NEW_CRIT_SOUND)) {
+                                    damager.playSound(damaged.getLocation(), Sound.ENTITY_PLAYER_ATTACK_CRIT, 1.0f, 1.0f);
+                                }
+                            }
                         }
 
                         queuedAttacks.add(new QueuedAttack(damager, damaged, initialDamage, criticalHit));
@@ -284,17 +304,14 @@ public final class AnimationModule implements ICXModule, Listener {
 
     @EventHandler (priority = EventPriority.MONITOR)
     public void onNoDamageTickApplied(EntityDamageEvent event) {
+        if (!(event.getEntity() instanceof LivingEntity)) {
+            return;
+        }
+
         final EntityDamageEvent.DamageCause cause = event.getCause();
+        final int delay = (cause.equals(EntityDamageEvent.DamageCause.POISON) || cause.equals(EntityDamageEvent.DamageCause.WITHER)) ? 0 : noDamageTicks;
 
-        if (!(event.getEntity() instanceof final Player player)) {
-            return;
-        }
-
-        if (!cause.equals(EntityDamageEvent.DamageCause.POISON) && !cause.equals(EntityDamageEvent.DamageCause.WITHER) && !cause.equals(EntityDamageEvent.DamageCause.FIRE_TICK)) {
-            return;
-        }
-
-        player.setNoDamageTicks(0);
+        new Scheduler(plugin).sync(() -> ((LivingEntity)event.getEntity()).setNoDamageTicks(delay)).delay(1L).run();
     }
 
     public record QueuedAttack(@Getter Player attacker,
