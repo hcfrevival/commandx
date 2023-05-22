@@ -128,13 +128,13 @@ public final class EssentialCommand extends BaseCommand {
     ) {
         GameMode gamemode = null;
 
-        if (gamemodeName.equalsIgnoreCase("s") || gamemodeName.equalsIgnoreCase("survival")) {
+        if (gamemodeName.equalsIgnoreCase("s") || gamemodeName.equalsIgnoreCase("survival") || gamemodeName.equalsIgnoreCase("0")) {
             gamemode = GameMode.SURVIVAL;
-        } else if (gamemodeName.equalsIgnoreCase("c") || gamemodeName.equalsIgnoreCase("creative")) {
+        } else if (gamemodeName.equalsIgnoreCase("c") || gamemodeName.equalsIgnoreCase("creative") || gamemodeName.equalsIgnoreCase("1")) {
             gamemode = GameMode.CREATIVE;
-        } else if (gamemodeName.equalsIgnoreCase("a") || gamemodeName.equalsIgnoreCase("adventure")) {
+        } else if (gamemodeName.equalsIgnoreCase("a") || gamemodeName.equalsIgnoreCase("adventure") || gamemodeName.equalsIgnoreCase("2")) {
             gamemode = GameMode.ADVENTURE;
-        } else if (gamemodeName.equalsIgnoreCase("spec") || gamemodeName.equalsIgnoreCase("spectator")) {
+        } else if (gamemodeName.equalsIgnoreCase("spec") || gamemodeName.equalsIgnoreCase("spectator") || gamemodeName.equalsIgnoreCase("3")) {
             gamemode = GameMode.SPECTATOR;
         }
 
