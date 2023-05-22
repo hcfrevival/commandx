@@ -304,7 +304,7 @@ public final class AnimationModule implements ICXModule, Listener {
 
     @EventHandler (priority = EventPriority.MONITOR)
     public void onNoDamageTickApplied(EntityDamageEvent event) {
-        if (!(event.getEntity() instanceof LivingEntity)) {
+        if (!(event.getEntity() instanceof Player)) {
             return;
         }
 
