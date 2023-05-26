@@ -120,7 +120,7 @@ public final class ChatModule implements ICXModule, Listener {
         final String message = event.getMessage();
         final String[] split = message.split(" ");
 
-        if (player.hasPermission(CXPermissions.CX_MOD)) {
+        if (player.hasPermission(CXPermissions.CX_MOD) || player.hasPermission(CXPermissions.CX_PREMIUM)) {
             return;
         }
 
@@ -141,7 +141,7 @@ public final class ChatModule implements ICXModule, Listener {
 
         final Player player = event.getPlayer();
 
-        if (player.hasPermission(CXPermissions.CX_MOD)) {
+        if (player.hasPermission(CXPermissions.CX_MOD) || player.hasPermission(CXPermissions.CX_PREMIUM)) {
             return;
         }
 
