@@ -50,11 +50,18 @@ public final class EssentialCommand extends BaseCommand {
 
     @CommandAlias("broadcast")
     @CommandPermission(CXPermissions.CX_MOD)
-    @Syntax("[-p] <message>")
+    @Syntax("[-p|-r] <message>")
     @Description("Broadcast a message")
     public void onBroadcast(CommandSender sender, String message) {
         final String[] split = message.split(" ");
         final boolean asPlayer = (split.length > 1 && split[0].equalsIgnoreCase("-p"));
+        final boolean raw = (split.length > 1 && split[0].equalsIgnoreCase("-r"));
+
+        if (raw) {
+            final String trimmed = message.substring(3);
+            Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', trimmed));
+            return;
+        }
 
         if (asPlayer) {
             final String trimmed = message.substring(3);
