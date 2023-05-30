@@ -98,7 +98,8 @@ public final class Hologram {
      */
     public boolean updateLine(int index, String newText) {
         if (index > text.size()) {
-            return false;
+            addLine(newText);
+            return true;
         }
 
         final String line = text.get(index);
