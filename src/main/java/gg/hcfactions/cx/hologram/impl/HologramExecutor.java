@@ -1,55 +1,93 @@
 package gg.hcfactions.cx.hologram.impl;
 
+import gg.hcfactions.cx.hologram.EHologramOrder;
 import gg.hcfactions.cx.hologram.HologramManager;
 import gg.hcfactions.cx.hologram.IHologramExecutor;
 import gg.hcfactions.libs.base.consumer.Promise;
 import gg.hcfactions.libs.bukkit.location.impl.PLocatable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.bukkit.ChatColor;
-import org.bukkit.entity.Player;
-
-import java.util.List;
+import java.util.Collections;
 
 @AllArgsConstructor
 public final class HologramExecutor implements IHologramExecutor {
     @Getter public HologramManager manager;
 
     @Override
-    public void createHologram(PLocatable locatable, String text) {
-        final Hologram holo = new Hologram(text, locatable);
-        holo.spawn();
+    public void createHologram(PLocatable location, String initialText, EHologramOrder order) {
+        final Hologram holo = new Hologram(manager.getNextId().getAndIncrement(), Collections.singletonList(initialText), location, order);
         manager.getHologramRepository().add(holo);
         manager.saveHolograms();
-        manager.getService().getPlugin().getAresLogger().info("spawned hologram at " + locatable.toString());
+
+        holo.spawn();
     }
 
     @Override
-    public void createHologram(Player player, String text) {
-        final Hologram holo = new Hologram(text, new PLocatable(player));
+    public void addLineToHologram(int hologramId, String text, Promise promise) {
+        final Hologram holo = manager.getHologramRepository().stream().filter(h -> h.getId() == hologramId).findFirst().orElse(null);
 
-        holo.spawn();
-
-        manager.getHologramRepository().add(holo);
-        manager.saveHolograms();
-        player.sendMessage(ChatColor.GREEN + "Hologram created");
-    }
-
-    @Override
-    public void deleteHologram(Player player, double radius, Promise promise) {
-        final List<Hologram> holograms = manager.getHologramRepository().stream().filter(h -> h.getLocation().isNearby(new PLocatable(player), radius)).toList();
-
-        if (holograms.isEmpty()) {
-            promise.reject("No holograms found");
+        if (holo == null) {
+            promise.reject("Hologram not found");
             return;
         }
 
-        holograms.forEach(hologram -> {
-            hologram.despawn();
-            manager.deleteHologram(hologram);
-        });
+        holo.addLine(text);
+        manager.saveHolograms();
+        promise.resolve();
+    }
 
-        holograms.forEach(manager.getHologramRepository()::remove);
+    @Override
+    public void removeLineFromHologram(int hologramId, int index, Promise promise) {
+        final Hologram holo = manager.getHologramRepository().stream().filter(h -> h.getId() == hologramId).findFirst().orElse(null);
+
+        if (holo == null) {
+            promise.reject("Hologram not found");
+            return;
+        }
+
+        final boolean removed = holo.removeLine(index);
+
+        if (!removed) {
+            promise.reject("Failed to remove line (out of bounds or no match)");
+            return;
+        }
+
+        manager.saveHolograms();
+        promise.resolve();
+    }
+
+    @Override
+    public void updateLineForHologram(int hologramId, int index, String newText, Promise promise) {
+        final Hologram holo = manager.getHologramRepository().stream().filter(h -> h.getId() == hologramId).findFirst().orElse(null);
+
+        if (holo == null) {
+            promise.reject("Hologram not found");
+            return;
+        }
+
+        final boolean updated = holo.updateLine(index, newText);
+
+        if (!updated) {
+            promise.reject("Failed to remove line (out of bounds or no match)");
+            return;
+        }
+
+        manager.saveHolograms();
+        promise.resolve();
+    }
+
+    @Override
+    public void deleteHologram(int hologramId, Promise promise) {
+        final Hologram holo = manager.getHologramRepository().stream().filter(h -> h.getId() == hologramId).findFirst().orElse(null);
+
+        if (holo == null) {
+            promise.reject("Hologram not found");
+            return;
+        }
+
+        holo.despawn();
+        manager.getHologramRepository().remove(holo);
+        manager.deleteHologram(holo);
         promise.resolve();
     }
 }
