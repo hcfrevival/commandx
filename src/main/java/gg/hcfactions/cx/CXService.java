@@ -3,6 +3,7 @@ package gg.hcfactions.cx;
 import com.google.common.collect.Lists;
 import gg.hcfactions.cx.broadcasts.BroadcastManager;
 import gg.hcfactions.cx.command.*;
+import gg.hcfactions.cx.hologram.HologramManager;
 import gg.hcfactions.cx.kits.KitManager;
 import gg.hcfactions.cx.listener.SignListener;
 import gg.hcfactions.cx.message.MessageManager;
@@ -19,6 +20,7 @@ import gg.hcfactions.cx.modules.world.WorldModule;
 import gg.hcfactions.cx.warp.WarpManager;
 import gg.hcfactions.libs.bukkit.AresPlugin;
 import gg.hcfactions.libs.bukkit.remap.ERemappedEnchantment;
+import gg.hcfactions.libs.bukkit.scheduler.Scheduler;
 import gg.hcfactions.libs.bukkit.services.IAresService;
 import lombok.Getter;
 
@@ -33,6 +35,7 @@ public final class CXService implements IAresService {
     @Getter public WarpManager warpManager;
     @Getter public KitManager kitManager;
     @Getter public BroadcastManager broadcastManager;
+    @Getter public HologramManager hologramManager;
 
     @Getter public RebootModule rebootModule;
     @Getter public AnimationModule animationModule;
@@ -61,6 +64,7 @@ public final class CXService implements IAresService {
         plugin.registerCommand(new VanishCommand(this));
         plugin.registerCommand(new WarpCommand(this));
         plugin.registerCommand(new KitCommand(this));
+        plugin.registerCommand(new HologramCommand(this));
 
         plugin.registerListener(new SignListener(this));
 
@@ -76,6 +80,10 @@ public final class CXService implements IAresService {
 
         kitManager = new KitManager(this);
         kitManager.loadKits();
+
+        hologramManager = new HologramManager(this);
+        hologramManager.loadHolograms();
+        new Scheduler(plugin).sync(() -> hologramManager.spawnHolograms()).delay(20L).run();
 
         // command completions
         plugin.getCommandManager().getCommandCompletions().registerAsyncCompletion("warps", ctx -> {
@@ -144,6 +152,8 @@ public final class CXService implements IAresService {
         tablistModule.onDisable();
         rebootModule.onDisable();
         exploitPatchModule.onDisable();
+
+        hologramManager.despawnHolograms();
     }
 
     @Override
@@ -151,6 +161,7 @@ public final class CXService implements IAresService {
         warpManager.loadWarps();
         kitManager.loadKits();
         broadcastManager.loadBroadcasts();
+        hologramManager.reloadHolograms();
 
         animationModule.onReload();
         knockbackModule.onReload();
