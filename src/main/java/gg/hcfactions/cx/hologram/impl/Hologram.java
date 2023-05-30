@@ -103,6 +103,7 @@ public final class Hologram {
 
         final String line = text.get(index);
         final double searchRadius = text.size()*0.3;
+        final String formatted = ChatColor.translateAlternateColorCodes('&', newText);
 
         for (Entity nearby : Objects.requireNonNull(origin.getBukkitLocation().getWorld()).getNearbyEntities(origin.getBukkitLocation(), 1.0, searchRadius, 1.0)) {
             if (!(nearby instanceof final ArmorStand as)) {
@@ -113,7 +114,8 @@ public final class Hologram {
                 continue;
             }
 
-            as.setCustomName(ChatColor.translateAlternateColorCodes('&', newText));
+            as.setCustomName(formatted);
+            text.set(index, formatted);
             return true;
         }
 
