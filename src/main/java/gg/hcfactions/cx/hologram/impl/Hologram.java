@@ -47,12 +47,7 @@ public final class Hologram {
             as.setCustomNameVisible(true);
             as.setGravity(false);
 
-            if (order.equals(EHologramOrder.DESCENDING)) {
-                offset -= 0.25;
-                continue;
-            }
-
-            offset += 0.25;
+            offset += 0.3;
         }
     }
 
@@ -97,7 +92,7 @@ public final class Hologram {
      * @return True if update was performed
      */
     public boolean updateLine(int index, String newText) {
-        if (index > text.size()) {
+        if (index >= text.size()) {
             addLine(newText);
             return true;
         }
