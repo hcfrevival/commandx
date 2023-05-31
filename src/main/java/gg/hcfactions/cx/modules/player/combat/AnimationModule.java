@@ -8,6 +8,7 @@ import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.comphenix.protocol.wrappers.WrappedEnumEntityUseAction;
 import com.google.common.collect.Queues;
+import com.google.common.collect.Sets;
 import gg.hcfactions.cx.modules.ICXModule;
 import gg.hcfactions.libs.bukkit.AresPlugin;
 import gg.hcfactions.libs.bukkit.events.impl.PlayerDamagePlayerEvent;
@@ -37,6 +38,8 @@ import org.bukkit.scheduler.BukkitTask;
 
 import java.util.Objects;
 import java.util.Queue;
+import java.util.Set;
+import java.util.UUID;
 
 public final class AnimationModule implements ICXModule, Listener {
     @Getter public final AresPlugin plugin;
@@ -50,6 +53,7 @@ public final class AnimationModule implements ICXModule, Listener {
     private AccountService accountService;
     private BukkitTask attackQueueTask;
     private final Queue<QueuedAttack> queuedAttacks;
+    private final Set<UUID> recentlyTakenTickDamage;
 
     public AnimationModule(AresPlugin plugin) {
         this.plugin = plugin;
@@ -57,6 +61,7 @@ public final class AnimationModule implements ICXModule, Listener {
         this.enabled = false;
         this.accountService = null;
         this.queuedAttacks = Queues.newConcurrentLinkedQueue();
+        this.recentlyTakenTickDamage = Sets.newConcurrentHashSet();
     }
 
     @Override
@@ -304,14 +309,39 @@ public final class AnimationModule implements ICXModule, Listener {
 
     @EventHandler (priority = EventPriority.MONITOR)
     public void onNoDamageTickApplied(EntityDamageEvent event) {
-        if (!(event.getEntity() instanceof Player)) {
+        if (!(event.getEntity() instanceof final Player player)) {
             return;
         }
 
+        final UUID uniqueId = player.getUniqueId();
         final EntityDamageEvent.DamageCause cause = event.getCause();
-        final int delay = (cause.equals(EntityDamageEvent.DamageCause.POISON) || cause.equals(EntityDamageEvent.DamageCause.WITHER)) ? 0 : noDamageTicks;
+        final boolean isTickingCause = cause.equals(EntityDamageEvent.DamageCause.POISON)
+                || cause.equals(EntityDamageEvent.DamageCause.FIRE)
+                || cause.equals(EntityDamageEvent.DamageCause.LAVA)
+                || cause.equals(EntityDamageEvent.DamageCause.FIRE_TICK)
+                || cause.equals(EntityDamageEvent.DamageCause.FREEZE)
+                || cause.equals(EntityDamageEvent.DamageCause.WITHER)
+                || cause.equals(EntityDamageEvent.DamageCause.CRAMMING)
+                || cause.equals(EntityDamageEvent.DamageCause.CONTACT)
+                || cause.equals(EntityDamageEvent.DamageCause.DRAGON_BREATH)
+                || cause.equals(EntityDamageEvent.DamageCause.HOT_FLOOR)
+                || cause.equals(EntityDamageEvent.DamageCause.STARVATION)
+                || cause.equals(EntityDamageEvent.DamageCause.THORNS)
+                || cause.equals(EntityDamageEvent.DamageCause.VOID);
 
-        new Scheduler(plugin).sync(() -> ((LivingEntity)event.getEntity()).setNoDamageTicks(delay)).delay(1L).run();
+        if (isTickingCause && recentlyTakenTickDamage.contains(uniqueId)) {
+            event.setCancelled(true);
+            return;
+        }
+
+        final int ticks = isTickingCause ? 0 : noDamageTicks;
+
+        if (isTickingCause) {
+            recentlyTakenTickDamage.add(uniqueId);
+            new Scheduler(plugin).sync(() -> recentlyTakenTickDamage.remove(uniqueId)).delay(noDamageTicks).run();
+        }
+
+        new Scheduler(plugin).sync(() -> ((LivingEntity)event.getEntity()).setNoDamageTicks(ticks)).delay(1L).run();
     }
 
     public record QueuedAttack(@Getter Player attacker,
