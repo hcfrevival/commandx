@@ -5,11 +5,10 @@ import com.google.common.collect.Sets;
 import gg.hcfactions.cx.CXPermissions;
 import gg.hcfactions.cx.modules.ICXModule;
 import gg.hcfactions.libs.bukkit.AresPlugin;
+import gg.hcfactions.libs.bukkit.scheduler.Scheduler;
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.CreatureSpawner;
@@ -20,16 +19,17 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.*;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.ExplosionPrimeEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerPortalEvent;
 
 import java.util.List;
 import java.util.Set;
@@ -44,6 +44,7 @@ public final class WorldModule implements ICXModule, Listener {
     private boolean disableEntityBlockChanges;
     private boolean disableExplosiveExploits;
     private boolean allowPearlingThroughTraps;
+    private boolean generateNetherPortalPlatforms;
     private Set<EntityType> disabledEntities;
     private Set<EntityType> disabledSpawnerBlockBreaks;
 
@@ -86,6 +87,7 @@ public final class WorldModule implements ICXModule, Listener {
         allowPearlingThroughTraps = conf.getBoolean(getKey() + "allow_pearling_through_traps");
         disableEntityBlockChanges = conf.getBoolean(getKey() + "disable_entity_block_changes");
         disableExplosiveExploits = conf.getBoolean(getKey() + "disable_explosive_exploits");
+        generateNetherPortalPlatforms = conf.getBoolean(getKey() + "generate_nether_portal_platforms");
 
         final List<String> disabledEntityNames = conf.getStringList(getKey() + "disabled_entities");
         final List<String> disabledEntitySpawnerBreakNames = conf.getStringList(getKey() + "disabled_spawner_break");
@@ -286,5 +288,49 @@ public final class WorldModule implements ICXModule, Listener {
                 }
             }
         }
+    }
+
+    @EventHandler (priority = EventPriority.HIGHEST)
+    public void onPlayerPortal(PlayerPortalEvent event) {
+        if (!isEnabled() || !generateNetherPortalPlatforms) {
+            return;
+        }
+
+        if (event.isCancelled()) {
+            return;
+        }
+
+        final Player player = event.getPlayer();
+
+        if (!player.getGameMode().equals(GameMode.SURVIVAL)) {
+            return;
+        }
+
+        final Location to = event.getTo();
+
+        if (to == null || to.getWorld() == null || !to.getWorld().getEnvironment().equals(World.Environment.NETHER)) {
+            return;
+        }
+
+        new Scheduler(plugin).sync(() -> {
+            final Location playerLoc = player.getLocation();
+
+            if (playerLoc.getWorld() == null) {
+                return;
+            }
+
+            final int minX = playerLoc.getBlockX() - 4;
+            final int minZ = playerLoc.getBlockZ() - 4;
+            final int maxX = playerLoc.getBlockX() + 4;
+            final int maxZ = playerLoc.getBlockZ() + 4;
+            final int y = playerLoc.getBlockY() - 1;
+
+            for (int x = minX; x < maxX; x++) {
+                for (int z = minZ; z < maxZ; z++) {
+                    final Block block = playerLoc.getWorld().getBlockAt(x, y, z);
+                    block.setType(Material.OBSIDIAN);
+                }
+            }
+        }).delay(1L).run();
     }
 }

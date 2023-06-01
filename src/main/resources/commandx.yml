@@ -9,6 +9,7 @@ world:
     disable_entity_block_changes: true
     disable_explosive_exploits: true
     allow_pearling_through_traps: true
+    generate_nether_portal_platforms: true
     disabled_entities:
       - 'PHANTOM'
       - 'ENDERMITE'
