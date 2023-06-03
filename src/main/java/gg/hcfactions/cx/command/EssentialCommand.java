@@ -428,14 +428,14 @@ public final class EssentialCommand extends BaseCommand {
         final List<String> result = Lists.newArrayList();
         final List<String> rankNames = Lists.newArrayList();
 
-        Collections.reverse(rankNames);
         Collections.reverse(result);
 
         res.forEach((rank, usernames) -> {
-            rankNames.add(rank.getColor() + rank.getDisplayName());
+            rankNames.add(rank.getColor() + rank.getName());
             usernames.forEach(name -> result.add(rank.getColor() + name));
         });
 
+        rankNames.add("Default");
         result.addAll(defaultNames);
 
         player.sendMessage(" ");
