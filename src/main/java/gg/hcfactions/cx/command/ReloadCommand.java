@@ -17,6 +17,20 @@ import org.bukkit.entity.Player;
 public final class ReloadCommand extends BaseCommand {
     @Getter public final CXService service;
 
+    @Subcommand("debug")
+    @Description("Enter debug mode")
+    @CommandPermission(CXPermissions.CX_MOD)
+    public void onDebug(Player player) {
+        if (service.getAnimationModule().getDebugging().contains(player.getUniqueId())) {
+            service.getAnimationModule().getDebugging().remove(player.getUniqueId());
+            player.sendMessage(ChatColor.AQUA + "Left debug mode");
+            return;
+        }
+
+        service.getAnimationModule().getDebugging().add(player.getUniqueId());
+        player.sendMessage(ChatColor.AQUA + "Entered debug mode");
+    }
+
     @Subcommand("reload all")
     @Description("Reload CommandX")
     @CommandPermission(CXPermissions.CX_MOD)

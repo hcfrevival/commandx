@@ -17,6 +17,7 @@ import gg.hcfactions.libs.bukkit.services.impl.account.AccountService;
 import gg.hcfactions.libs.bukkit.services.impl.account.model.AresAccount;
 import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
@@ -45,6 +46,7 @@ public final class AnimationModule implements ICXModule, Listener {
     @Getter public final AresPlugin plugin;
     @Getter public final String key;
     @Getter @Setter public boolean enabled;
+    @Getter public Set<UUID> debugging;
 
     // config values
     private double maxReach;
@@ -62,6 +64,7 @@ public final class AnimationModule implements ICXModule, Listener {
         this.accountService = null;
         this.queuedAttacks = Queues.newConcurrentLinkedQueue();
         this.recentlyTakenTickDamage = Sets.newConcurrentHashSet();
+        this.debugging = Sets.newConcurrentHashSet();
     }
 
     @Override
@@ -91,6 +94,9 @@ public final class AnimationModule implements ICXModule, Listener {
 
     @Override
     public void onReload() {
+        debugging.clear();
+        queuedAttacks.clear();
+
         loadConfig();
 
         if (!enabled) {
@@ -107,6 +113,7 @@ public final class AnimationModule implements ICXModule, Listener {
 
     @Override
     public void onDisable() {
+        debugging.clear();
         queuedAttacks.clear();
 
         if (attackQueueTask != null) {
@@ -139,6 +146,9 @@ public final class AnimationModule implements ICXModule, Listener {
             while (!queuedAttacks.isEmpty()) {
                 final QueuedAttack attack = queuedAttacks.remove();
                 attack.getAttacked().damage(attack.getDamage(), attack.getAttacker());
+                if (debugging.contains(attack.getAttacker().getUniqueId())) {
+                    attack.getAttacker().sendMessage(ChatColor.GREEN + "DEBUG: hit processed");
+                }
             }
         }).repeat(0L, 1L).run();
     }
@@ -162,10 +172,18 @@ public final class AnimationModule implements ICXModule, Listener {
                     final Entity entity = packet.getEntityModifier(event).readSafely(0);
 
                     if (entity == null) {
+                        if (debugging.contains(damager.getUniqueId())) {
+                            damager.sendMessage(ChatColor.RED + "DEBUG: no entity");
+                        }
+
                         return;
                     }
 
                     if (entity instanceof Player && !((Player)entity).getGameMode().equals(GameMode.SURVIVAL)) {
+                        if (debugging.contains(damager.getUniqueId())) {
+                            damager.sendMessage(ChatColor.RED + "DEBUG: player is not in survival");
+                        }
+
                         return;
                     }
 
@@ -173,10 +191,18 @@ public final class AnimationModule implements ICXModule, Listener {
                         final double distance = damager.getLocation().distanceSquared(damaged.getLocation());
 
                         if (damaged.isDead()) {
+                            if (debugging.contains(damager.getUniqueId())) {
+                                damager.sendMessage(ChatColor.RED + "DEBUG: damaged entity is dead");
+                            }
+
                             return;
                         }
 
                         if (distance > (maxReach * maxReach)) {
+                            if (debugging.contains(damager.getUniqueId())) {
+                                damager.sendMessage(ChatColor.RED + "DEBUG: " + distance + " > " + (maxReach * maxReach));
+                            }
+
                             return;
                         }
 
@@ -197,6 +223,9 @@ public final class AnimationModule implements ICXModule, Listener {
                         }
 
                         queuedAttacks.add(new QueuedAttack(damager, damaged, initialDamage, criticalHit));
+                        if (debugging.contains(damager.getUniqueId())) {
+                            damager.sendMessage(ChatColor.YELLOW + "DEBUG: attack queued");
+                        }
                     }
                 }).run();
             }
@@ -330,6 +359,10 @@ public final class AnimationModule implements ICXModule, Listener {
                 || cause.equals(EntityDamageEvent.DamageCause.VOID);
 
         if (isTickingCause && recentlyTakenTickDamage.contains(uniqueId)) {
+            if (debugging.contains(player.getUniqueId())) {
+                player.sendMessage(ChatColor.RED + "DEBUG: skipped damage (isTicking and recentlyTakenTickDamage)");
+            }
+
             event.setCancelled(true);
             return;
         }
@@ -337,11 +370,21 @@ public final class AnimationModule implements ICXModule, Listener {
         final int ticks = isTickingCause ? 0 : noDamageTicks;
 
         if (isTickingCause) {
+            if (debugging.contains(player.getUniqueId())) {
+                player.sendMessage(ChatColor.RED + "DEBUG: skipped damage (isTicking and recentlyTakenTickDamage)");
+            }
+
             recentlyTakenTickDamage.add(uniqueId);
             new Scheduler(plugin).sync(() -> recentlyTakenTickDamage.remove(uniqueId)).delay(noDamageTicks).run();
         }
 
-        new Scheduler(plugin).sync(() -> ((LivingEntity)event.getEntity()).setNoDamageTicks(ticks)).delay(1L).run();
+        new Scheduler(plugin).sync(() -> {
+            ((LivingEntity)event.getEntity()).setNoDamageTicks(ticks);
+
+            if (debugging.contains(player.getUniqueId())) {
+                player.sendMessage(ChatColor.AQUA + "set no damage ticks to " + ticks);
+            }
+        }).delay(1L).run();
     }
 
     public record QueuedAttack(@Getter Player attacker,
