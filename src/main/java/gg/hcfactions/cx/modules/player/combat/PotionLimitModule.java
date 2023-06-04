@@ -89,7 +89,7 @@ public final class PotionLimitModule implements ICXModule, Listener {
      * @param type Potion Effect Type
      * @return Potion Limit
      */
-    private PotionLimit getPotionLimit(PotionEffectType type) {
+    public PotionLimit getPotionLimit(PotionEffectType type) {
         return potionLimits.stream().filter(p -> p.getType().equals(type)).findFirst().orElse(null);
     }
 
