@@ -87,7 +87,7 @@ public final class EnchantLimitModule implements ICXModule, Listener {
      * @param enchantment Enchantment
      * @return Max Enchantment Level
      */
-    private int getMaxEnchantmentLevel(Enchantment enchantment) {
+    public int getMaxEnchantmentLevel(Enchantment enchantment) {
         return enchantLimits.getOrDefault(enchantment, -1);
     }
 
