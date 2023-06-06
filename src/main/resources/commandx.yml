@@ -101,6 +101,7 @@ combat:
         extendable: false
 exploit:
   enabled: true
+  disable_block_glitching: true
   disable_pearl_clipping: true
   disable_elytra_bouncing: true
   elytra_bouncing_height: 3
