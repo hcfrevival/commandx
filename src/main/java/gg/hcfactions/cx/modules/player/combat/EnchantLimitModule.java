@@ -28,9 +28,9 @@ public final class EnchantLimitModule implements ICXModule, Listener {
     @Getter public final AresPlugin plugin;
     @Getter public final String key;
     @Getter @Setter public boolean enabled;
+    @Getter public final Map<Enchantment, Integer> enchantLimits;
 
     private final Random random;
-    private final Map<Enchantment, Integer> enchantLimits;
 
     public EnchantLimitModule(AresPlugin plugin) {
         this.plugin = plugin;

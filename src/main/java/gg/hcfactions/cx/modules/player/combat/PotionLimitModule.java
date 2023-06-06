@@ -8,7 +8,6 @@ import gg.hcfactions.libs.bukkit.remap.ERemappedEffect;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -29,8 +28,7 @@ public final class PotionLimitModule implements ICXModule, Listener {
     @Getter public final AresPlugin plugin;
     @Getter public final String key;
     @Getter @Setter public boolean enabled;
-
-    private final List<PotionLimit> potionLimits;
+    @Getter public final List<PotionLimit> potionLimits;
 
     public PotionLimitModule(AresPlugin plugin) {
         this.plugin = plugin;
