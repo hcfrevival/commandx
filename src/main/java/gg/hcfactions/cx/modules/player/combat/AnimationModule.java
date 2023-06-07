@@ -17,15 +17,11 @@ import gg.hcfactions.libs.bukkit.services.impl.account.AccountService;
 import gg.hcfactions.libs.bukkit.services.impl.account.model.AresAccount;
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -160,8 +156,13 @@ public final class AnimationModule implements ICXModule, Listener {
                 final PacketContainer packet = event.getPacket();
                 final WrappedEnumEntityUseAction useAction = packet.getEnumEntityUseActions().read(0);
                 final EnumWrappers.EntityUseAction action = useAction.getAction();
+                final int entityId = packet.getIntegers().read(0);
 
                 if (!action.equals(EnumWrappers.EntityUseAction.ATTACK)) {
+                    return;
+                }
+
+                if (Bukkit.getOnlinePlayers().stream().noneMatch(p -> p.getEntityId() == entityId)) {
                     return;
                 }
 
@@ -187,45 +188,47 @@ public final class AnimationModule implements ICXModule, Listener {
                         return;
                     }
 
-                    if (entity instanceof final LivingEntity damaged) {
-                        final double distance = damager.getLocation().distanceSquared(damaged.getLocation());
+                    if (!(entity instanceof final LivingEntity damaged)) {
+                        return;
+                    }
 
-                        if (damaged.isDead()) {
-                            if (debugging.contains(damager.getUniqueId())) {
-                                damager.sendMessage(ChatColor.RED + "DEBUG: damaged entity is dead");
-                            }
+                    final double distance = damager.getLocation().distanceSquared(damaged.getLocation());
 
-                            return;
-                        }
-
-                        if (distance > (maxReach * maxReach)) {
-                            if (debugging.contains(damager.getUniqueId())) {
-                                damager.sendMessage(ChatColor.RED + "DEBUG: " + distance + " > " + (maxReach * maxReach));
-                            }
-
-                            return;
-                        }
-
-                        double initialDamage = Objects.requireNonNull(damager.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE)).getValue();
-                        boolean criticalHit = false;
-
-                        if (!((LivingEntity) damager).isOnGround() && damager.getVelocity().getY() < 0) {
-                            initialDamage *= 1.25;
-                            criticalHit = true;
-
-                            if (accountService != null) {
-                                final AresAccount cachedAccount = accountService.getCachedAccount(damager.getUniqueId());
-
-                                if (cachedAccount != null && cachedAccount.getSettings().isEnabled(AresAccount.Settings.SettingValue.USE_NEW_CRIT_SOUND)) {
-                                    damager.playSound(damaged.getLocation(), Sound.ENTITY_PLAYER_ATTACK_CRIT, 1.0f, 1.0f);
-                                }
-                            }
-                        }
-
-                        queuedAttacks.add(new QueuedAttack(damager, damaged, initialDamage, criticalHit));
+                    if (damaged.isDead()) {
                         if (debugging.contains(damager.getUniqueId())) {
-                            damager.sendMessage(ChatColor.YELLOW + "DEBUG: attack queued");
+                            damager.sendMessage(ChatColor.RED + "DEBUG: damaged entity is dead");
                         }
+
+                        return;
+                    }
+
+                    if (distance > (maxReach * maxReach)) {
+                        if (debugging.contains(damager.getUniqueId())) {
+                            damager.sendMessage(ChatColor.RED + "DEBUG: " + distance + " > " + (maxReach * maxReach));
+                        }
+
+                        return;
+                    }
+
+                    double initialDamage = Objects.requireNonNull(damager.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE)).getValue();
+                    boolean criticalHit = false;
+
+                    if (!((LivingEntity) damager).isOnGround() && damager.getVelocity().getY() < 0) {
+                        initialDamage *= 1.25;
+                        criticalHit = true;
+
+                        if (accountService != null) {
+                            final AresAccount cachedAccount = accountService.getCachedAccount(damager.getUniqueId());
+
+                            if (cachedAccount != null && cachedAccount.getSettings().isEnabled(AresAccount.Settings.SettingValue.USE_NEW_CRIT_SOUND)) {
+                                damager.playSound(damaged.getLocation(), Sound.ENTITY_PLAYER_ATTACK_CRIT, 1.0f, 1.0f);
+                            }
+                        }
+                    }
+
+                    queuedAttacks.add(new QueuedAttack(damager, damaged, initialDamage, criticalHit));
+                    if (debugging.contains(damager.getUniqueId())) {
+                        damager.sendMessage(ChatColor.YELLOW + "DEBUG: attack queued");
                     }
                 }).run();
             }
