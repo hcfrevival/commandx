@@ -434,6 +434,8 @@ public final class EssentialCommand extends BaseCommand {
         });
 
         rankNames.add("Default");
+
+        Collections.reverse(result);
         result.addAll(defaultNames);
 
         player.sendMessage(" ");
