@@ -356,7 +356,8 @@ public final class AnimationModule implements ICXModule, Listener {
                 || cause.equals(EntityDamageEvent.DamageCause.HOT_FLOOR)
                 || cause.equals(EntityDamageEvent.DamageCause.STARVATION)
                 || cause.equals(EntityDamageEvent.DamageCause.THORNS)
-                || cause.equals(EntityDamageEvent.DamageCause.VOID);
+                || cause.equals(EntityDamageEvent.DamageCause.VOID)
+                || cause.equals(EntityDamageEvent.DamageCause.DROWNING);
 
         if (isTickingCause && recentlyTakenTickDamage.contains(uniqueId)) {
             if (debugging.contains(player.getUniqueId())) {
