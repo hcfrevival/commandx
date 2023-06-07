@@ -4,7 +4,6 @@ import gg.hcfactions.cx.modules.ICXModule;
 import gg.hcfactions.libs.bukkit.AresPlugin;
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
