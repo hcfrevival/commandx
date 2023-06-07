@@ -91,8 +91,8 @@ public final class RegenModule implements ICXModule, Listener {
         }
 
         new Scheduler(plugin).sync(() -> {
-            player.setExhaustion(preExhaustion + 0.2F);
-            player.setSaturation(preSaturation - 0.2F);
+            player.setExhaustion(preExhaustion + 0.1F);
+            player.setSaturation(preSaturation - 0.1F);
         }).delay(1L).run();
     }
 }
