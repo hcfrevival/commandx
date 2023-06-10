@@ -8,6 +8,8 @@ import gg.hcfactions.libs.bukkit.AresPlugin;
 import gg.hcfactions.libs.bukkit.scheduler.Scheduler;
 import lombok.Getter;
 import lombok.Setter;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
@@ -28,6 +30,7 @@ import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.ExplosionPrimeEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.event.player.PlayerBedEnterEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
 
@@ -43,6 +46,7 @@ public final class WorldModule implements ICXModule, Listener {
     private boolean disableEnderchests;
     private boolean disableEntityBlockChanges;
     private boolean disableExplosiveExploits;
+    private boolean disableEnterBedMessage;
     private boolean allowPearlingThroughTraps;
     private boolean generateNetherPortalPlatforms;
     private Set<EntityType> disabledEntities;
@@ -87,6 +91,7 @@ public final class WorldModule implements ICXModule, Listener {
         allowPearlingThroughTraps = conf.getBoolean(getKey() + "allow_pearling_through_traps");
         disableEntityBlockChanges = conf.getBoolean(getKey() + "disable_entity_block_changes");
         disableExplosiveExploits = conf.getBoolean(getKey() + "disable_explosive_exploits");
+        disableEnterBedMessage = conf.getBoolean(getKey() + "disable_enter_bed_message");
         generateNetherPortalPlatforms = conf.getBoolean(getKey() + "generate_nether_portal_platforms");
 
         final List<String> disabledEntityNames = conf.getStringList(getKey() + "disabled_entities");
@@ -292,6 +297,22 @@ public final class WorldModule implements ICXModule, Listener {
                 }
             }
         }
+    }
+
+    @EventHandler (priority = EventPriority.MONITOR)
+    public void onPlayerEnterBed(PlayerBedEnterEvent event) {
+        if (!isEnabled() || !disableEnterBedMessage) {
+            return;
+        }
+
+        if (event.isCancelled()) {
+            return;
+        }
+
+        new Scheduler(plugin).sync(() ->
+                Bukkit.getOnlinePlayers().forEach(onlinePlayer -> onlinePlayer.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(" "))))
+                .delay(1L)
+                .run();
     }
 
     @EventHandler (priority = EventPriority.HIGHEST)
