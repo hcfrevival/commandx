@@ -130,7 +130,7 @@ public final class EssentialCommand extends BaseCommand {
     @CommandCompletion("@players")
     @CommandPermission(CXPermissions.CX_MOD)
     public void onGamemodeChange(
-            Player player, @Values("creative|survival|adventure|spectator|c|s|a|spec") String gamemodeName,
+            Player player, @Values("creative|survival|adventure|spectator|c|s|a|spec|0|1|2|3") String gamemodeName,
             @Optional String username
     ) {
         GameMode gamemode = null;
