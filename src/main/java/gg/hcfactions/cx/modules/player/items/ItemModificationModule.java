@@ -9,13 +9,14 @@ import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.inventory.InventoryAction;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.PlayerFishEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
@@ -121,12 +122,58 @@ public class ItemModificationModule implements ICXModule, Listener {
             return;
         }
 
-        if (event.getAction().equals(InventoryAction.MOVE_TO_OTHER_INVENTORY)) {
-            player.sendMessage(ChatColor.RED + "This item can not be moved to your off-hand");
-            event.setCancelled(true);
+        player.sendMessage(ChatColor.RED + "This item can not be moved to your off-hand");
+        event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onCraftItem(CraftItemEvent event) {
+        if (!isEnabled() || !disableShield) {
+            return;
+        }
+
+        if (!event.getRecipe().getResult().getType().equals(Material.SHIELD)) {
+            return;
+        }
+
+        event.setResult(Event.Result.DENY);
+        event.setCurrentItem(null);
+        event.setCancelled(true);
+
+        if (event.getWhoClicked() instanceof final Player player) {
+            player.sendMessage(ChatColor.RED + "This item can not be crafted");
         }
     }
 
+    @EventHandler
+    public void onBlockShield(PlayerInteractEvent event) {
+        if (!isEnabled() || !disableShield) {
+            return;
+        }
+
+        if (event.getAction().equals(Action.PHYSICAL)) {
+            return;
+        }
+
+        final Player player = event.getPlayer();
+
+        if (!player.isBlocking() && !player.isHandRaised()) {
+            return;
+        }
+
+        final ItemStack mainHand = player.getInventory().getItemInMainHand();
+        final ItemStack offHand = player.getInventory().getItemInOffHand();
+
+        if (mainHand.getType().equals(Material.SHIELD)) {
+            player.getInventory().setItemInMainHand(null);
+            player.sendMessage(ChatColor.RED + "Shields are disabled in the main-hand");
+        }
+
+        if (offHand.getType().equals(Material.SHIELD)) {
+            player.getInventory().setItemInOffHand(null);
+            player.sendMessage(ChatColor.RED + "Shields are disabled in the off-hand");
+        }
+    }
 
     @EventHandler
     public void onPlayerTeleport(PlayerTeleportEvent event) {
