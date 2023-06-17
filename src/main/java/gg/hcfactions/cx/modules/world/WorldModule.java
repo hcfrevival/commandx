@@ -1,8 +1,10 @@
 package gg.hcfactions.cx.modules.world;
 
 import com.destroystokyo.paper.event.entity.PreCreatureSpawnEvent;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import gg.hcfactions.cx.CXPermissions;
+import gg.hcfactions.cx.event.PortalPlatformGenerateEvent;
 import gg.hcfactions.cx.modules.ICXModule;
 import gg.hcfactions.libs.bukkit.AresPlugin;
 import gg.hcfactions.libs.bukkit.scheduler.Scheduler;
@@ -349,13 +351,23 @@ public final class WorldModule implements ICXModule, Listener {
             final int maxX = playerLoc.getBlockX() + 4;
             final int maxZ = playerLoc.getBlockZ() + 4;
             final int y = playerLoc.getBlockY() - 1;
+            final List<Block> platformBlocks = Lists.newArrayList();
 
             for (int x = minX; x < maxX; x++) {
                 for (int z = minZ; z < maxZ; z++) {
                     final Block block = playerLoc.getWorld().getBlockAt(x, y, z);
-                    block.setType(Material.OBSIDIAN);
+                    platformBlocks.add(block);
                 }
             }
+
+            final PortalPlatformGenerateEvent generateEvent = new PortalPlatformGenerateEvent(playerLoc, platformBlocks);
+            Bukkit.getPluginManager().callEvent(generateEvent);
+
+            if (generateEvent.isCancelled() || generateEvent.getBlockList().isEmpty()) {
+                return;
+            }
+
+            generateEvent.getBlockList().forEach(block -> block.setType(Material.OBSIDIAN));
         }).delay(1L).run();
     }
 }
