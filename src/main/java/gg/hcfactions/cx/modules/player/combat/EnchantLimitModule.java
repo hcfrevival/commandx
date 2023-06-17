@@ -105,7 +105,7 @@ public final class EnchantLimitModule implements ICXModule, Listener {
                 continue;
             }
 
-            return Collections.singletonMap(enchantment, enchantLimits.get(enchantment));
+            return Collections.singletonMap(enchantment, enchantLimits.getOrDefault(enchantment, 1));
         }
 
         return null;
