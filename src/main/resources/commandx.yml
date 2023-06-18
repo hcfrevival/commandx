@@ -43,6 +43,11 @@ world:
       - TADPOLE
       - TROPICAL_FISH
       - TURTLE
+  exp_bonus:
+    enabled: true
+    modifiers:
+      fortune: 2.5
+      looting: 3.0
 items:
   velocity:
     enabled: true

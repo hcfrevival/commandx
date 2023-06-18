@@ -15,6 +15,7 @@ import gg.hcfactions.cx.modules.player.items.ItemModificationModule;
 import gg.hcfactions.cx.modules.player.items.ItemVelocityModule;
 import gg.hcfactions.cx.modules.player.vanish.VanishManager;
 import gg.hcfactions.cx.modules.reboot.RebootModule;
+import gg.hcfactions.cx.modules.world.EXPBonusModule;
 import gg.hcfactions.cx.modules.world.MobstackModule;
 import gg.hcfactions.cx.modules.world.WorldModule;
 import gg.hcfactions.cx.warp.WarpManager;
@@ -50,6 +51,7 @@ public final class CXService implements IAresService {
     @Getter public RegenModule regenModule;
     @Getter public TablistModule tablistModule;
     @Getter public ExploitPatchModule exploitPatchModule;
+    @Getter public EXPBonusModule expBonusModule;
 
     public CXService(AresPlugin plugin) {
         this.plugin = plugin;
@@ -121,6 +123,7 @@ public final class CXService implements IAresService {
         tablistModule = new TablistModule(plugin);
         rebootModule = new RebootModule(plugin);
         exploitPatchModule = new ExploitPatchModule(plugin);
+        expBonusModule = new EXPBonusModule(plugin);
 
         animationModule.onEnable();
         knockbackModule.onEnable();
@@ -135,6 +138,7 @@ public final class CXService implements IAresService {
         tablistModule.onEnable();
         rebootModule.onEnable();
         exploitPatchModule.onEnable();
+        expBonusModule.onEnable();
     }
 
     @Override
@@ -152,6 +156,7 @@ public final class CXService implements IAresService {
         tablistModule.onDisable();
         rebootModule.onDisable();
         exploitPatchModule.onDisable();
+        expBonusModule.onDisable();
 
         hologramManager.despawnHolograms();
     }
@@ -176,5 +181,6 @@ public final class CXService implements IAresService {
         tablistModule.onReload();
         rebootModule.onReload();
         exploitPatchModule.onReload();
+        expBonusModule.onReload();
     }
 }
