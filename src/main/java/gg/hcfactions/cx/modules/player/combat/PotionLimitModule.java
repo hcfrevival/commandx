@@ -103,7 +103,7 @@ public final class PotionLimitModule implements ICXModule, Listener {
 
         for (PotionEffect effect : event.getPotion().getEffects()) {
             final PotionLimit limit = getPotionLimit(effect.getType());
-            final boolean extended = effect.getDuration() > 90*20;
+            final boolean extended = effect.getDuration() >= 90*20;
 
             if (limit == null) {
                 continue;
