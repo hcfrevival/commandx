@@ -294,7 +294,7 @@ public final class AnimationModule implements ICXModule, Listener {
         final Player damaged = event.getDamaged();
         final ItemStack hand = damager.getInventory().getItemInMainHand();
 
-        if (damaged.getUniqueId().equals(damaged.getUniqueId())) {
+        if (damager.getUniqueId().equals(damaged.getUniqueId())) {
             return;
         }
 
