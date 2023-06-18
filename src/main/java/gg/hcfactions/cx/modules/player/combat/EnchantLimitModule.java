@@ -97,15 +97,16 @@ public final class EnchantLimitModule implements ICXModule, Listener {
      */
     private Map<Enchantment, Integer> getRandomEnchantment() {
         int cursor = 0;
-        final int pos = Math.abs(random.nextInt(enchantLimits.size()));
+        final int pos = Math.abs(random.nextInt(ERemappedEnchantment.values().length));
+        final int randomLevel = Math.abs(random.nextInt(3));
 
-        for (Enchantment enchantment : enchantLimits.keySet()) {
+        for (ERemappedEnchantment remapped : ERemappedEnchantment.values()) {
             if (cursor != pos) {
                 cursor++;
                 continue;
             }
 
-            return Collections.singletonMap(enchantment, enchantLimits.getOrDefault(enchantment, 1));
+            return Collections.singletonMap(remapped.getEnchantment(), enchantLimits.getOrDefault(remapped.getEnchantment(), randomLevel));
         }
 
         return null;
@@ -239,8 +240,10 @@ public final class EnchantLimitModule implements ICXModule, Listener {
                 final Map<Enchantment, Integer> replacement = getRandomEnchantment();
 
                 Objects.requireNonNull(replacement).forEach((enchantment, level) -> {
-                    offer.setEnchantment(enchantment);
-                    offer.setEnchantmentLevel(level);
+                    if (level > 0) {
+                        offer.setEnchantment(enchantment);
+                        offer.setEnchantmentLevel(level);
+                    }
                 });
 
                 continue;
