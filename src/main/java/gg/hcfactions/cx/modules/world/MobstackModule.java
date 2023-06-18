@@ -317,12 +317,12 @@ public final class MobstackModule implements ICXModule, Listener {
 
         if (entity instanceof final Colorable entityA) {
             final Colorable entityB = (Colorable)clone;
-            entityA.setColor(entityB.getColor());
+            entityB.setColor(entityA.getColor());
         }
 
         if (entity instanceof final Ageable entityA) {
             final Ageable entityB = (Ageable)clone;
-            entityA.setAge(entityB.getAge());
+            entityB.setAge(entityA.getAge());
         }
 
         stackSkip.add(entity.getUniqueId());
