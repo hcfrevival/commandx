@@ -65,6 +65,9 @@ combat:
   regen:
     enabled: true
     heal_rate: 3
+  durability:
+    enabled: true
+    reduction: 2
   knockback:
     enabled: true
     ground_check: true

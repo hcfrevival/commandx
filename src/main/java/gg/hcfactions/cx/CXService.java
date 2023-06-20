@@ -52,6 +52,7 @@ public final class CXService implements IAresService {
     @Getter public TablistModule tablistModule;
     @Getter public ExploitPatchModule exploitPatchModule;
     @Getter public EXPBonusModule expBonusModule;
+    @Getter public DurabilityModule durabilityModule;
 
     public CXService(AresPlugin plugin) {
         this.plugin = plugin;
@@ -124,6 +125,7 @@ public final class CXService implements IAresService {
         rebootModule = new RebootModule(plugin);
         exploitPatchModule = new ExploitPatchModule(plugin);
         expBonusModule = new EXPBonusModule(plugin);
+        durabilityModule = new DurabilityModule(plugin);
 
         animationModule.onEnable();
         knockbackModule.onEnable();
@@ -139,6 +141,7 @@ public final class CXService implements IAresService {
         rebootModule.onEnable();
         exploitPatchModule.onEnable();
         expBonusModule.onEnable();
+        durabilityModule.onEnable();
     }
 
     @Override
@@ -157,6 +160,7 @@ public final class CXService implements IAresService {
         rebootModule.onDisable();
         exploitPatchModule.onDisable();
         expBonusModule.onDisable();
+        durabilityModule.onDisable();
 
         hologramManager.despawnHolograms();
     }
@@ -182,5 +186,6 @@ public final class CXService implements IAresService {
         rebootModule.onReload();
         exploitPatchModule.onReload();
         expBonusModule.onReload();
+        durabilityModule.onReload();
     }
 }
