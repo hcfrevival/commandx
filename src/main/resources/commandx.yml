@@ -108,6 +108,11 @@ combat:
         disabled: true
         amplifiable: false
         extendable: false
+      SLOW_FALLING:
+        disabled: false;
+        amplifiable: false
+        extendable: true
+        can_splash: false
 exploit:
   enabled: true
   disable_block_glitching: true
