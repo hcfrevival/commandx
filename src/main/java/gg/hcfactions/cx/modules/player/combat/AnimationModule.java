@@ -298,6 +298,7 @@ public final class AnimationModule implements ICXModule, Listener {
             return;
         }
 
+        // Fire Aspect
         if (hand.hasItemMeta() && Objects.requireNonNull(hand.getItemMeta()).hasEnchant(Enchantment.FIRE_ASPECT)) {
             damaged.setFireTicks(80 * hand.getItemMeta().getEnchantLevel(Enchantment.FIRE_ASPECT));
         }
@@ -334,6 +335,7 @@ public final class AnimationModule implements ICXModule, Listener {
             return;
         }
 
+        // Fire Aspect
         if (hand.hasItemMeta() && Objects.requireNonNull(hand.getItemMeta()).hasEnchant(Enchantment.FIRE_ASPECT)) {
             entity.setFireTicks(80 * hand.getItemMeta().getEnchantLevel(Enchantment.FIRE_ASPECT));
         }
