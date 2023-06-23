@@ -7,6 +7,7 @@ import gg.hcfactions.libs.bukkit.events.impl.PlayerLingeringSplashEvent;
 import gg.hcfactions.libs.bukkit.remap.ERemappedEffect;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -14,6 +15,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PotionSplashEvent;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
@@ -212,6 +214,55 @@ public final class PotionLimitModule implements ICXModule, Listener {
             player.sendMessage(ChatColor.RED + "This potion has been disabled");
             event.setCancelled(true);
         }
+    }
+
+    /**
+     * Removes limited effects upon changing worlds
+     * @param event PlayerChangedWorldEvent
+     */
+    @EventHandler
+    public void onPlayerChangeWorld(PlayerChangedWorldEvent event) {
+        final Player player = event.getPlayer();
+        final List<PotionEffectType> toRemove = Lists.newArrayList();
+
+        for (PotionEffect effect : player.getActivePotionEffects()) {
+            final PotionLimit limit = getPotionLimit(effect.getType());
+            final boolean extended = (effect.getType().equals(PotionEffectType.POISON)
+                    ? effect.getDuration() > 45*20
+                    : effect.getDuration() > 90*20);
+
+            if (effect.isInfinite()) {
+                continue;
+            }
+
+            if (limit == null) {
+                continue;
+            }
+
+            if (limit.isDisabled()) {
+                toRemove.add(effect.getType());
+                continue;
+            }
+
+            if (!limit.isAmplifiable() && effect.getAmplifier() > 0) {
+                toRemove.add(effect.getType());
+                continue;
+            }
+
+            if (!limit.isExtendable() && extended) {
+                toRemove.add(effect.getType());
+            }
+        }
+
+        if (toRemove.isEmpty()) {
+            return;
+        }
+
+        toRemove.forEach(removedEffectType -> {
+            player.removePotionEffect(removedEffectType);
+            player.sendMessage(ChatColor.RED + "Removed Effect" + ChatColor.RESET + ": "
+                    + StringUtils.capitalize(ERemappedEffect.getRemappedEffect(removedEffectType).name().toLowerCase()).replaceAll("_", " "));
+        });
     }
 
     public record PotionLimit(@Getter PotionEffectType type, @Getter boolean disabled, @Getter boolean extendable,
