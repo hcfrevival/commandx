@@ -18,6 +18,7 @@ import gg.hcfactions.cx.modules.reboot.RebootModule;
 import gg.hcfactions.cx.modules.world.EXPBonusModule;
 import gg.hcfactions.cx.modules.world.MobstackModule;
 import gg.hcfactions.cx.modules.world.WorldModule;
+import gg.hcfactions.cx.rollback.RollbackManager;
 import gg.hcfactions.cx.warp.WarpManager;
 import gg.hcfactions.libs.bukkit.AresPlugin;
 import gg.hcfactions.libs.bukkit.remap.ERemappedEnchantment;
@@ -37,6 +38,7 @@ public final class CXService implements IAresService {
     @Getter public KitManager kitManager;
     @Getter public BroadcastManager broadcastManager;
     @Getter public HologramManager hologramManager;
+    @Getter public RollbackManager rollbackManager;
 
     @Getter public RebootModule rebootModule;
     @Getter public AnimationModule animationModule;
@@ -68,6 +70,7 @@ public final class CXService implements IAresService {
         plugin.registerCommand(new WarpCommand(this));
         plugin.registerCommand(new KitCommand(this));
         plugin.registerCommand(new HologramCommand(this));
+        plugin.registerCommand(new RollbackCommand(this));
 
         plugin.registerListener(new SignListener(this));
 
@@ -87,6 +90,8 @@ public final class CXService implements IAresService {
         hologramManager = new HologramManager(this);
         hologramManager.loadHolograms();
         new Scheduler(plugin).sync(() -> hologramManager.spawnHolograms()).delay(20L).run();
+
+        rollbackManager = new RollbackManager(this);
 
         // command completions
         plugin.getCommandManager().getCommandCompletions().registerAsyncCompletion("warps", ctx -> {
