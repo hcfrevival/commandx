@@ -268,6 +268,10 @@ public final class PotionLimitModule implements ICXModule, Listener {
         });
     }
 
+    /**
+     * Limits tipped arrow potion effects
+     * @param event ProjectileHitEvent
+     */
     @EventHandler (priority = EventPriority.HIGHEST)
     public void onTippedArrowHit(ProjectileHitEvent event) {
         if (event.isCancelled()) {
@@ -291,21 +295,37 @@ public final class PotionLimitModule implements ICXModule, Listener {
         }
 
         if (limit.isDisabled()) {
+            if (arrow.getShooter() instanceof final Player player) {
+                player.sendMessage(ChatColor.RED + "This Tipped Arrow is disabled");
+            }
+
             event.setCancelled(true);
             return;
         }
 
         if (!limit.canSplash()) {
+            if (arrow.getShooter() instanceof final Player player) {
+                player.sendMessage(ChatColor.RED + "This Tipped Arrow is disabled");
+            }
+
             event.setCancelled(true);
             return;
         }
 
         if (!limit.isAmplifiable() && arrow.getBasePotionData().isUpgraded()) {
+            if (arrow.getShooter() instanceof final Player player) {
+                player.sendMessage(ChatColor.RED + "This Tipped Arrow can not be amplified");
+            }
+
             event.setCancelled(true);
             return;
         }
 
         if (!limit.isExtendable() && arrow.getBasePotionData().isExtended()) {
+            if (arrow.getShooter() instanceof final Player player) {
+                player.sendMessage(ChatColor.RED + "This Tipped Arrow can not be extended");
+            }
+
             event.setCancelled(true);
         }
     }
