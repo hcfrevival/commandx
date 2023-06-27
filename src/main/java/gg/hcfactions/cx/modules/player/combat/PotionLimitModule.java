@@ -11,10 +11,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PotionSplashEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.inventory.ItemStack;
@@ -263,6 +266,48 @@ public final class PotionLimitModule implements ICXModule, Listener {
             player.sendMessage(ChatColor.RED + "Removed Effect" + ChatColor.RESET + ": "
                     + StringUtils.capitalize(ERemappedEffect.getRemappedEffect(removedEffectType).name().toLowerCase()).replaceAll("_", " "));
         });
+    }
+
+    @EventHandler (priority = EventPriority.HIGHEST)
+    public void onTippedArrowHit(ProjectileHitEvent event) {
+        if (event.isCancelled()) {
+            return;
+        }
+
+        if (!(event.getEntity() instanceof final Arrow arrow)) {
+            return;
+        }
+
+        final PotionEffectType type = arrow.getBasePotionData().getType().getEffectType();
+
+        if (type == null) {
+            return;
+        }
+
+        final PotionLimit limit = getPotionLimit(type);
+
+        if (limit == null) {
+            return;
+        }
+
+        if (limit.isDisabled()) {
+            event.setCancelled(true);
+            return;
+        }
+
+        if (!limit.canSplash()) {
+            event.setCancelled(true);
+            return;
+        }
+
+        if (!limit.isAmplifiable() && arrow.getBasePotionData().isUpgraded()) {
+            event.setCancelled(true);
+            return;
+        }
+
+        if (!limit.isExtendable() && arrow.getBasePotionData().isExtended()) {
+            event.setCancelled(true);
+        }
     }
 
     public record PotionLimit(@Getter PotionEffectType type, @Getter boolean disabled, @Getter boolean extendable,
