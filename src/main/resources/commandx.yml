@@ -62,6 +62,10 @@ items:
       enabled: true
       reduction: 0.5
 combat:
+  elytra:
+    remove_elytra_on_projectile_damage: true
+    remove_elytra_bhopping: true
+    prevent_firework_stacking: true
   regen:
     enabled: true
     heal_rate: 3
@@ -117,8 +121,6 @@ exploit:
   enabled: true
   disable_block_glitching: true
   disable_pearl_clipping: true
-  disable_elytra_bouncing: true
-  elytra_bouncing_height: 3
 chat:
   enabled: true
   disable_join_leave_messages: true

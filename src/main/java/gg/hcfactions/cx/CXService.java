@@ -55,6 +55,7 @@ public final class CXService implements IAresService {
     @Getter public ExploitPatchModule exploitPatchModule;
     @Getter public EXPBonusModule expBonusModule;
     @Getter public DurabilityModule durabilityModule;
+    @Getter public ElytraBalanceModule elytraBalanceModule;
 
     public CXService(AresPlugin plugin) {
         this.plugin = plugin;
@@ -131,6 +132,7 @@ public final class CXService implements IAresService {
         exploitPatchModule = new ExploitPatchModule(plugin);
         expBonusModule = new EXPBonusModule(plugin);
         durabilityModule = new DurabilityModule(plugin);
+        elytraBalanceModule = new ElytraBalanceModule(plugin);
 
         animationModule.onEnable();
         knockbackModule.onEnable();
@@ -147,6 +149,7 @@ public final class CXService implements IAresService {
         exploitPatchModule.onEnable();
         expBonusModule.onEnable();
         durabilityModule.onEnable();
+        elytraBalanceModule.onEnable();
     }
 
     @Override
@@ -166,6 +169,7 @@ public final class CXService implements IAresService {
         exploitPatchModule.onDisable();
         expBonusModule.onDisable();
         durabilityModule.onDisable();
+        elytraBalanceModule.onDisable();
 
         hologramManager.despawnHolograms();
     }
@@ -192,5 +196,6 @@ public final class CXService implements IAresService {
         exploitPatchModule.onReload();
         expBonusModule.onReload();
         durabilityModule.onReload();
+        elytraBalanceModule.onReload();
     }
 }
