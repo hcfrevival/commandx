@@ -46,6 +46,7 @@ public final class Hologram {
             as.setInvisible(true);
             as.setCustomNameVisible(true);
             as.setGravity(false);
+            as.setCollidable(false);
 
             offset += 0.3;
         }
@@ -81,6 +82,7 @@ public final class Hologram {
         as.setCustomNameVisible(true);
         as.setGravity(false);
         as.setInvisible(true);
+        as.setCollidable(false);
 
         text.add(ChatColor.translateAlternateColorCodes('&', newLine));
     }

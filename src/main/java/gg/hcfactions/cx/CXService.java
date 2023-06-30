@@ -17,6 +17,7 @@ import gg.hcfactions.cx.modules.player.vanish.VanishManager;
 import gg.hcfactions.cx.modules.reboot.RebootModule;
 import gg.hcfactions.cx.modules.world.EXPBonusModule;
 import gg.hcfactions.cx.modules.world.MobstackModule;
+import gg.hcfactions.cx.modules.world.ShulkerModule;
 import gg.hcfactions.cx.modules.world.WorldModule;
 import gg.hcfactions.cx.rollback.RollbackManager;
 import gg.hcfactions.cx.warp.WarpManager;
@@ -56,6 +57,7 @@ public final class CXService implements IAresService {
     @Getter public EXPBonusModule expBonusModule;
     @Getter public DurabilityModule durabilityModule;
     @Getter public ElytraBalanceModule elytraBalanceModule;
+    @Getter public ShulkerModule shulkerModule;
 
     public CXService(AresPlugin plugin) {
         this.plugin = plugin;
@@ -133,6 +135,7 @@ public final class CXService implements IAresService {
         expBonusModule = new EXPBonusModule(plugin);
         durabilityModule = new DurabilityModule(plugin);
         elytraBalanceModule = new ElytraBalanceModule(plugin);
+        shulkerModule = new ShulkerModule(plugin);
 
         animationModule.onEnable();
         knockbackModule.onEnable();
@@ -150,6 +153,7 @@ public final class CXService implements IAresService {
         expBonusModule.onEnable();
         durabilityModule.onEnable();
         elytraBalanceModule.onEnable();
+        shulkerModule.onEnable();
     }
 
     @Override
@@ -170,6 +174,7 @@ public final class CXService implements IAresService {
         expBonusModule.onDisable();
         durabilityModule.onDisable();
         elytraBalanceModule.onDisable();
+        shulkerModule.onDisable();
 
         hologramManager.despawnHolograms();
     }
@@ -197,5 +202,6 @@ public final class CXService implements IAresService {
         expBonusModule.onReload();
         durabilityModule.onReload();
         elytraBalanceModule.onReload();
+        shulkerModule.onReload();
     }
 }
