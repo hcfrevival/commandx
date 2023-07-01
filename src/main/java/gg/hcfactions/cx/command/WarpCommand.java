@@ -78,4 +78,40 @@ public final class WarpCommand extends BaseCommand {
     public void onListWarp(Player player) {
         service.getWarpManager().getExecutor().listWarps(player);
     }
+
+    @Subcommand("gateway create")
+    @Description("Create a new Warp Gateway Block")
+    @CommandPermission(CXPermissions.CX_MOD)
+    @CommandCompletion("@warps")
+    public void onGatewayCreate(Player player, String warpName) {
+        service.getWarpManager().getExecutor().createGateway(player, warpName, new Promise() {
+            @Override
+            public void resolve() {
+                player.sendMessage(ChatColor.GREEN + "Gateway linked");
+            }
+
+            @Override
+            public void reject(String s) {
+                player.sendMessage(ChatColor.RED + "Failed to create: " + s);
+            }
+        });
+    }
+
+    @Subcommand("gateway delete")
+    @Description("Delete an existing gateway")
+    @CommandPermission(CXPermissions.CX_MOD)
+    @CommandCompletion("@warps")
+    public void onGatewayDelete(Player player, String warpName) {
+        service.getWarpManager().getExecutor().deleteGateway(player, warpName, new Promise() {
+            @Override
+            public void resolve() {
+                player.sendMessage(ChatColor.YELLOW + "Unlinked all gateways associated to " + warpName);
+            }
+
+            @Override
+            public void reject(String s) {
+                player.sendMessage(ChatColor.RED + "Failed to delete gateway: " + s);
+            }
+        });
+    }
 }

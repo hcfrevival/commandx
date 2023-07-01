@@ -4,13 +4,18 @@ import com.google.common.collect.Lists;
 import gg.hcfactions.cx.CXService;
 import gg.hcfactions.cx.warp.impl.Warp;
 import gg.hcfactions.cx.warp.impl.WarpExecutor;
+import gg.hcfactions.cx.warp.impl.WarpGateway;
+import gg.hcfactions.libs.bukkit.location.impl.BLocatable;
 import lombok.Getter;
 import org.bukkit.ChatColor;
+import org.bukkit.block.Block;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 public final class WarpManager {
     public static final String WARP_SIGN_IDENTIFIER = "[Warp]";
@@ -19,15 +24,29 @@ public final class WarpManager {
     @Getter public final CXService service;
     @Getter public final WarpExecutor executor;
     @Getter public List<Warp> warpRepository;
+    @Getter public List<WarpGateway> gatewayRepository;
 
     public WarpManager(CXService service) {
         this.service = service;
         this.executor = new WarpExecutor(this);
         this.warpRepository = Lists.newArrayList();
+        this.gatewayRepository = Lists.newArrayList();
     }
 
     public Optional<Warp> getWarp(String warpName) {
         return warpRepository.stream().filter(w -> w.getName().equalsIgnoreCase(warpName)).findFirst();
+    }
+
+    public Optional<WarpGateway> getGateway(Block block) {
+        return gatewayRepository
+                .stream()
+                .filter(w -> w.getBlock().getX() == block.getX() && w.getBlock().getY() == block.getY() && w.getBlock().getZ() == block.getZ() && w.getBlock().getWorldName().equalsIgnoreCase(block.getWorld().getName()))
+                .findFirst();
+    }
+
+    public List<WarpGateway> getGatewayByDestination(String destName) {
+        return gatewayRepository
+                .stream().filter(gateway -> gateway.getDestinationName().equalsIgnoreCase(destName)).collect(Collectors.toList());
     }
 
     public void loadWarps() {
@@ -58,6 +77,40 @@ public final class WarpManager {
         service.getPlugin().getAresLogger().info("loaded " + warpRepository.size() + " warps");
     }
 
+    public void loadGateways() {
+        if (!gatewayRepository.isEmpty()) {
+            gatewayRepository.clear();
+        }
+
+        final YamlConfiguration conf = service.getPlugin().loadConfiguration("gateways");
+
+        if (conf.getConfigurationSection("data") == null) {
+            service.getPlugin().getAresLogger().warn("could not find data in gateways.yml. skipping...");
+            return;
+        }
+
+        for (String gatewayId : Objects.requireNonNull(conf.getConfigurationSection("data")).getKeys(false)) {
+            final String key = "data." + gatewayId + ".";
+            final double x = conf.getDouble(key + "x");
+            final double y = conf.getDouble(key + "y");
+            final double z = conf.getDouble(key + "z");
+            final String worldName = conf.getString(key + "world");
+            final String destinationName = conf.getString(key + "destination");
+
+            final Optional<Warp> warpQuery = warpRepository.stream().filter(w -> w.getName().equalsIgnoreCase(destinationName)).findFirst();
+
+            if (warpQuery.isEmpty()) {
+                service.getPlugin().getAresLogger().warn("failed to link gateway, warp: " + destinationName + " was not found");
+                continue;
+            }
+
+            final WarpGateway gateway = new WarpGateway(service, UUID.fromString(gatewayId), destinationName, new BLocatable(worldName, x, y, z));
+            gatewayRepository.add(gateway);
+        }
+
+        service.getPlugin().getAresLogger().info("loaded " + gatewayRepository.size() + " warp gateway blocks");
+    }
+
     public void saveWarp(Warp warp) {
         final YamlConfiguration conf = service.getPlugin().loadConfiguration("warps");
         final String key = "data." + warp.getName() + ".";
@@ -72,9 +125,28 @@ public final class WarpManager {
         service.getPlugin().saveConfiguration("warps", conf);
     }
 
+    public void saveGateway(WarpGateway gateway) {
+        final YamlConfiguration conf = service.getPlugin().loadConfiguration("gateways");
+        final String key = "data." + gateway.getUniqueId().toString() + ".";
+
+        conf.set(key + "destination", gateway.getDestinationName());
+        conf.set(key + "x", gateway.getBlock().getX());
+        conf.set(key + "y", gateway.getBlock().getY());
+        conf.set(key + "z", gateway.getBlock().getZ());
+        conf.set(key + "world", gateway.getBlock().getWorldName());
+
+        service.getPlugin().saveConfiguration("gateways", conf);
+    }
+
     public void deleteWarp(Warp warp) {
         final YamlConfiguration conf = service.getPlugin().loadConfiguration("warps");
         conf.set("data." + warp.getName(), null);
         service.getPlugin().saveConfiguration("warps", conf);
+    }
+
+    public void deleteGateway(WarpGateway gateway) {
+        final YamlConfiguration conf = service.getPlugin().loadConfiguration("gateways");
+        conf.set("data." + gateway.getUniqueId().toString(), null);
+        service.getPlugin().saveConfiguration("gateways", conf);
     }
 }

@@ -29,4 +29,22 @@ public interface IWarpExecutor {
      * @param player Player to view warps
      */
     void listWarps(Player player);
+
+    /**
+     * Create a new gateway block
+     *
+     * @param player Player
+     * @param destinationName Warp name
+     * @param promise Promise
+     */
+    void createGateway(Player player, String destinationName, Promise promise);
+
+    /**
+     * Delete a gateway and all portal blocks associated to it
+     *
+     * @param player Player
+     * @param destinationName Warp name
+     * @param promise Promise
+     */
+    void deleteGateway(Player player, String destinationName, Promise promise);
 }

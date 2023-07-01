@@ -6,6 +6,7 @@ import gg.hcfactions.cx.command.*;
 import gg.hcfactions.cx.hologram.HologramManager;
 import gg.hcfactions.cx.kits.KitManager;
 import gg.hcfactions.cx.listener.SignListener;
+import gg.hcfactions.cx.listener.WarpGatewayListener;
 import gg.hcfactions.cx.message.MessageManager;
 import gg.hcfactions.cx.modules.chat.ChatModule;
 import gg.hcfactions.cx.modules.display.TablistModule;
@@ -76,6 +77,7 @@ public final class CXService implements IAresService {
         plugin.registerCommand(new RollbackCommand(this));
 
         plugin.registerListener(new SignListener(this));
+        plugin.registerListener(new WarpGatewayListener(this));
 
         messageManager = new MessageManager(this);
         vanishManager = new VanishManager(this);
@@ -86,6 +88,7 @@ public final class CXService implements IAresService {
 
         warpManager = new WarpManager(this);
         warpManager.loadWarps();
+        warpManager.loadGateways();
 
         kitManager = new KitManager(this);
         kitManager.loadKits();
@@ -182,6 +185,7 @@ public final class CXService implements IAresService {
     @Override
     public void onReload() {
         warpManager.loadWarps();
+        warpManager.loadGateways();
         kitManager.loadKits();
         broadcastManager.loadBroadcasts();
         hologramManager.reloadHolograms();
