@@ -135,7 +135,7 @@ public final class ElytraBalanceModule implements ICXModule, Listener {
             return;
         }
 
-        if (!isInAir(player, 2)) {
+        if (!isInAir(player, 3)) {
             removeElytraFromChestplate(player);
             event.setCancelled(true);
         }
