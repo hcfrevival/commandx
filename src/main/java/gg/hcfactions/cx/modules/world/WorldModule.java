@@ -6,6 +6,7 @@ import com.google.common.collect.Sets;
 import gg.hcfactions.cx.CXPermissions;
 import gg.hcfactions.cx.event.PortalPlatformGenerateEvent;
 import gg.hcfactions.cx.modules.ICXModule;
+import gg.hcfactions.libs.base.util.Time;
 import gg.hcfactions.libs.bukkit.AresPlugin;
 import gg.hcfactions.libs.bukkit.scheduler.Scheduler;
 import lombok.Getter;
@@ -49,14 +50,17 @@ public final class WorldModule implements ICXModule, Listener {
     private boolean disableEntityBlockChanges;
     private boolean disableExplosiveExploits;
     private boolean disableEnterBedMessage;
+    private boolean witherSpawnCooldown;
     private boolean allowPearlingThroughTraps;
     private boolean generateNetherPortalPlatforms;
+    private long nextWitherSpawn;
     private Set<EntityType> disabledEntities;
     private Set<EntityType> disabledSpawnerBlockBreaks;
 
     public WorldModule(AresPlugin plugin) {
         this.plugin = plugin;
         this.key = "world.general.";
+        this.nextWitherSpawn = Time.now();
         this.disabledEntities = Sets.newHashSet();
         this.disabledSpawnerBlockBreaks = Sets.newHashSet();
     }
@@ -94,6 +98,7 @@ public final class WorldModule implements ICXModule, Listener {
         disableEntityBlockChanges = conf.getBoolean(getKey() + "disable_entity_block_changes");
         disableExplosiveExploits = conf.getBoolean(getKey() + "disable_explosive_exploits");
         disableEnterBedMessage = conf.getBoolean(getKey() + "disable_enter_bed_message");
+        witherSpawnCooldown = conf.getBoolean(getKey() + "wither_spawn_cooldown");
         generateNetherPortalPlatforms = conf.getBoolean(getKey() + "generate_nether_portal_platforms");
 
         final List<String> disabledEntityNames = conf.getStringList(getKey() + "disabled_entities");
@@ -119,6 +124,24 @@ public final class WorldModule implements ICXModule, Listener {
                 plugin.getAresLogger().error("bad entity type: " + entityName);
             }
         }
+    }
+
+    @EventHandler (priority = EventPriority.HIGHEST)
+    public void onWitherSpawn(CreatureSpawnEvent event) {
+        if (!isEnabled() || !witherSpawnCooldown || event.isCancelled()) {
+            return;
+        }
+
+        if (!event.getSpawnReason().equals(CreatureSpawnEvent.SpawnReason.BUILD_WITHER)) {
+            return;
+        }
+
+        if (nextWitherSpawn < Time.now()) {
+            event.setCancelled(true);
+            return;
+        }
+
+        nextWitherSpawn = Time.now() + (60 * 1000L);
     }
 
     @EventHandler

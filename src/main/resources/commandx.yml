@@ -9,6 +9,7 @@ world:
     disable_entity_block_changes: true
     disable_explosive_exploits: true
     disable_enter_bed_message: true
+    wither_spawn_cooldown: true
     allow_pearling_through_traps: true
     generate_nether_portal_platforms: true
     disabled_entities:
