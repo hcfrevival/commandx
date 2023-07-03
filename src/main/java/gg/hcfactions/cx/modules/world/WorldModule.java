@@ -29,10 +29,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
-import org.bukkit.event.entity.CreatureSpawnEvent;
-import org.bukkit.event.entity.EntityChangeBlockEvent;
-import org.bukkit.event.entity.ExplosionPrimeEvent;
-import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.player.PlayerBedEnterEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
@@ -50,6 +47,8 @@ public final class WorldModule implements ICXModule, Listener {
     private boolean disableEntityBlockChanges;
     private boolean disableExplosiveExploits;
     private boolean disableEnterBedMessage;
+    private boolean nerfExplosiveDamage;
+    private double nerfExplosiveDamageAmount;
     private boolean witherSpawnCooldown;
     private boolean allowPearlingThroughTraps;
     private boolean generateNetherPortalPlatforms;
@@ -100,6 +99,8 @@ public final class WorldModule implements ICXModule, Listener {
         disableEnterBedMessage = conf.getBoolean(getKey() + "disable_enter_bed_message");
         witherSpawnCooldown = conf.getBoolean(getKey() + "wither_spawn_cooldown");
         generateNetherPortalPlatforms = conf.getBoolean(getKey() + "generate_nether_portal_platforms");
+        nerfExplosiveDamage = conf.getBoolean(getKey() + "nerf_explosive_damage.enabled");
+        nerfExplosiveDamageAmount = conf.getDouble(getKey() + "nerf_explosive_damage.amount");
 
         final List<String> disabledEntityNames = conf.getStringList(getKey() + "disabled_entities");
         final List<String> disabledEntitySpawnerBreakNames = conf.getStringList(getKey() + "disabled_spawner_break");
@@ -124,6 +125,24 @@ public final class WorldModule implements ICXModule, Listener {
                 plugin.getAresLogger().error("bad entity type: " + entityName);
             }
         }
+    }
+
+    @EventHandler (priority = EventPriority.MONITOR)
+    public void onEntityDamage(EntityDamageEvent event) {
+        if (!isEnabled() || event.isCancelled() || !nerfExplosiveDamage) {
+            return;
+        }
+
+        if (!(event.getEntity() instanceof Player)) {
+            return;
+        }
+
+        if (!(event.getCause().equals(EntityDamageEvent.DamageCause.ENTITY_EXPLOSION)) && !(event.getCause().equals(EntityDamageEvent.DamageCause.BLOCK_EXPLOSION))) {
+            return;
+        }
+
+        final double newAmount = event.getDamage() * nerfExplosiveDamageAmount;
+        event.setDamage(newAmount);
     }
 
     @EventHandler (priority = EventPriority.HIGHEST)
