@@ -4,8 +4,12 @@ import gg.hcfactions.cx.CXPermissions;
 import gg.hcfactions.cx.message.IMessageExecutor;
 import gg.hcfactions.cx.message.MessageManager;
 import gg.hcfactions.libs.base.consumer.Promise;
+import gg.hcfactions.libs.bukkit.scheduler.Scheduler;
 import gg.hcfactions.libs.bukkit.services.impl.account.AccountService;
 import gg.hcfactions.libs.bukkit.services.impl.account.model.AresAccount;
+import gg.hcfactions.libs.bukkit.services.impl.punishments.PunishmentService;
+import gg.hcfactions.libs.bukkit.services.impl.punishments.model.EPunishmentType;
+import gg.hcfactions.libs.bukkit.services.impl.punishments.model.impl.Punishment;
 import gg.hcfactions.libs.bukkit.utils.Players;
 import lombok.Getter;
 import org.bukkit.Bukkit;
@@ -20,10 +24,16 @@ public record MessageExecutor(@Getter MessageManager manager) implements IMessag
     @Override
     public void sendMessage(Player sender, Player receiver, String message, Promise promise) {
         final AccountService acs = (AccountService)manager.getService().getPlugin().getService(AccountService.class);
+        final PunishmentService ps = (PunishmentService)manager.getService().getPlugin().getService(PunishmentService.class);
         final boolean admin = sender.hasPermission(CXPermissions.CX_MOD);
 
         if (acs == null) {
             promise.reject("Failed to obtain Account Service");
+            return;
+        }
+
+        if (ps == null) {
+            promise.reject("Failed to obtain Punishment Service");
             return;
         }
 
@@ -65,24 +75,41 @@ public record MessageExecutor(@Getter MessageManager manager) implements IMessag
             return;
         }
 
-        receiver.sendMessage(ChatColor.GRAY + "(From " + sender.getName() + "): " + ChatColor.RESET + message);
-        sender.sendMessage(ChatColor.GRAY + "(To " + receiver.getName() + "): " + ChatColor.RESET + message);
+        new Scheduler(manager.getService().getPlugin()).async(() -> {
+            final Punishment activeMute = ps.getActivePunishmentByType(sender.getUniqueId(), EPunishmentType.MUTE);
 
-        if (receiverAccount.getSettings().isEnabled(AresAccount.Settings.SettingValue.PRIVATE_MESSAGES_PING_ENABLED)) {
-            Players.playSound(receiver, Sound.BLOCK_NOTE_BLOCK_PLING);
-        }
+            new Scheduler(manager.getService().getPlugin()).sync(() -> {
+                if (activeMute != null) {
+                    promise.reject("You can not perform this action while muted");
+                    return;
+                }
 
-        manager.setRecentlyMessaged(sender, receiver);
-        promise.resolve();
+                receiver.sendMessage(ChatColor.GRAY + "(From " + sender.getName() + "): " + ChatColor.RESET + message);
+                sender.sendMessage(ChatColor.GRAY + "(To " + receiver.getName() + "): " + ChatColor.RESET + message);
+
+                if (receiverAccount.getSettings().isEnabled(AresAccount.Settings.SettingValue.PRIVATE_MESSAGES_PING_ENABLED)) {
+                    Players.playSound(receiver, Sound.BLOCK_NOTE_BLOCK_PLING);
+                }
+
+                manager.setRecentlyMessaged(sender, receiver);
+                promise.resolve();
+            }).run();
+        }).run();
     }
 
     @Override
     public void sendReply(Player sender, String message, Promise promise) {
-        final AccountService service = (AccountService)manager.getService().getPlugin().getService(AccountService.class);
+        final AccountService acs = (AccountService)manager.getService().getPlugin().getService(AccountService.class);
+        final PunishmentService ps = (PunishmentService)manager.getService().getPlugin().getService(PunishmentService.class);
         final Optional<UUID> replyId = manager.getRecentlyMessaged(sender);
 
-        if (service == null) {
+        if (acs == null) {
             promise.reject("Failed to obtain Account Service");
+            return;
+        }
+
+        if (ps == null) {
+            promise.reject("Failed to obtain Punishment Service");
             return;
         }
 
@@ -99,8 +126,8 @@ public record MessageExecutor(@Getter MessageManager manager) implements IMessag
             return;
         }
 
-        final AresAccount senderAccount = service.getCachedAccount(sender.getUniqueId());
-        final AresAccount receiverAccount = service.getCachedAccount(receiver.getUniqueId());
+        final AresAccount senderAccount = acs.getCachedAccount(sender.getUniqueId());
+        final AresAccount receiverAccount = acs.getCachedAccount(receiver.getUniqueId());
 
         if (senderAccount == null) {
             promise.reject("Failed to obtain your account");
@@ -127,14 +154,25 @@ public record MessageExecutor(@Getter MessageManager manager) implements IMessag
             return;
         }
 
-        receiver.sendMessage(ChatColor.GRAY + "(From " + sender.getName() + "): " + ChatColor.RESET + message);
-        sender.sendMessage(ChatColor.GRAY + "(To " + receiver.getName() + "): " + ChatColor.RESET + message);
+        new Scheduler(manager.getService().getPlugin()).async(() -> {
+            final Punishment activeMute = ps.getActivePunishmentByType(sender.getUniqueId(), EPunishmentType.MUTE);
 
-        if (receiverAccount.getSettings().isEnabled(AresAccount.Settings.SettingValue.PRIVATE_MESSAGES_PING_ENABLED)) {
-            Players.playSound(receiver, Sound.BLOCK_NOTE_BLOCK_PLING);
-        }
+            new Scheduler(manager.getService().getPlugin()).sync(() -> {
+                if (activeMute != null) {
+                    promise.reject("You can not perform this action while muted");
+                    return;
+                }
 
-        manager.setRecentlyMessaged(sender, receiver);
-        promise.resolve();
+                receiver.sendMessage(ChatColor.GRAY + "(From " + sender.getName() + "): " + ChatColor.RESET + message);
+                sender.sendMessage(ChatColor.GRAY + "(To " + receiver.getName() + "): " + ChatColor.RESET + message);
+
+                if (receiverAccount.getSettings().isEnabled(AresAccount.Settings.SettingValue.PRIVATE_MESSAGES_PING_ENABLED)) {
+                    Players.playSound(receiver, Sound.BLOCK_NOTE_BLOCK_PLING);
+                }
+
+                manager.setRecentlyMessaged(sender, receiver);
+                promise.resolve();
+            }).run();
+        }).run();
     }
 }
