@@ -15,11 +15,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.inventory.*;
-import org.bukkit.event.player.PlayerFishEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerSwapHandItemsEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
 
 public class ItemModificationModule implements ICXModule, Listener {
     @Getter public final AresPlugin plugin;
@@ -31,6 +29,7 @@ public class ItemModificationModule implements ICXModule, Listener {
     private boolean disableShield;
     private boolean reduceAxeDamage;
     private double reduceAxeDamagePercent;
+    private boolean milkExcludesInfiniteEffects;
 
     public ItemModificationModule(AresPlugin plugin) {
         this.plugin = plugin;
@@ -62,11 +61,34 @@ public class ItemModificationModule implements ICXModule, Listener {
         this.disableFishingPlayers = conf.getBoolean(getKey() + "disable_fishing_players");
         this.reduceAxeDamage = conf.getBoolean(getKey() + "reduce_axe_damage.enabled");
         this.reduceAxeDamagePercent = conf.getDouble(getKey() + "reduce_axe_damage.reduction");
+        this.milkExcludesInfiniteEffects = conf.getBoolean(getKey() + "milk_excludes_infinite_effects");
     }
 
     @Override
     public void onReload() {
         loadConfig();
+    }
+
+    @EventHandler
+    public void onPlayerDrinkMilk(PlayerItemConsumeEvent event) {
+        if (!isEnabled() || !milkExcludesInfiniteEffects) {
+            return;
+        }
+
+        final Player player = event.getPlayer();
+        final ItemStack item = event.getItem();
+
+        if (!item.getType().equals(Material.MILK_BUCKET)) {
+            return;
+        }
+
+        event.setCancelled(true);
+
+        player.getActivePotionEffects().forEach(potionEffect -> {
+            if (!potionEffect.isInfinite()) {
+                player.removePotionEffect(potionEffect.getType());
+            }
+        });
     }
 
     @EventHandler

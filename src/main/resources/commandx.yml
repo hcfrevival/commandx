@@ -58,6 +58,7 @@ items:
     disable_chorus_fruit_teleport: true
     disable_fishing_players: true
     disable_shields: true
+    milk_excludes_infinite_effects: true
     reduce_axe_damage:
       enabled: true
       reduction: 0.5
