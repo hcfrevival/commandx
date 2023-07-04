@@ -70,6 +70,8 @@ combat:
   elytra:
     remove_elytra_on_projectile_damage: true
     remove_elytra_bhopping: true
+    bhop_max_vl: 3
+    bhop_vl_reset_interval: 30
   regen:
     enabled: true
     heal_rate: 3
