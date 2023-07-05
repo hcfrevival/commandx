@@ -242,10 +242,8 @@ public class ItemModificationModule implements ICXModule, Listener {
             return;
         }
 
-        Bukkit.broadcastMessage("pre: " + event.getDamage());
         if (reduceTridentDamage && player.getInventory().getItemInMainHand().getType().equals(Material.TRIDENT)) {
             event.setDamage(event.getDamage() * reduceTridentDamagePercent);
-            Bukkit.broadcastMessage("post: " + event.getDamage());
         }
     }
 }
