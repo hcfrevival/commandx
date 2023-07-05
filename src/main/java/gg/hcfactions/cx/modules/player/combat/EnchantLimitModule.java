@@ -92,12 +92,30 @@ public final class EnchantLimitModule implements ICXModule, Listener {
     }
 
     /**
-     * Returns a random enchantment that is allowed on the server
-     * @return Single entry Map containing a legal Enchantment with Enchantment Level
+     * Returns a random enchantment and enchantment level
+     * @param item ItemStack to check
+     * @return Immutable Singleton Map of Enchantment and Enchantment Level
      */
-    private Map<Enchantment, Integer> getRandomEnchantment() {
+    private Map<Enchantment, Integer> getRandomEnchantment(ItemStack item) {
+        final List<Enchantment> validEnchantments = Lists.newArrayList();
+
+        for (Enchantment enc : Enchantment.values()) {
+            if (getMaxEnchantmentLevel(enc) <= 0) {
+                continue;
+            }
+
+            if (enc.canEnchantItem(item)) {
+                validEnchantments.add(enc);
+            }
+        }
+
+        // catch-all that provies unbreaking 1
+        if (validEnchantments.isEmpty()) {
+            return Collections.singletonMap(Enchantment.DURABILITY, 0);
+        }
+
         int cursor = 0;
-        final int pos = Math.abs(random.nextInt(ERemappedEnchantment.values().length));
+        final int pos = Math.abs(random.nextInt(validEnchantments.size()));
         final int randomLevel = Math.abs(random.nextInt(3));
 
         for (ERemappedEnchantment remapped : ERemappedEnchantment.values()) {
@@ -223,6 +241,7 @@ public final class EnchantLimitModule implements ICXModule, Listener {
             return;
         }
 
+        final ItemStack item = event.getItem();
         final EnchantmentOffer[] offers = event.getOffers();
 
         for (EnchantmentOffer offer : offers) {
@@ -237,7 +256,7 @@ public final class EnchantLimitModule implements ICXModule, Listener {
             }
 
             if (maxEnchantmentLimit == 0) {
-                final Map<Enchantment, Integer> replacement = getRandomEnchantment();
+                final Map<Enchantment, Integer> replacement = getRandomEnchantment(item);
 
                 Objects.requireNonNull(replacement).forEach((enchantment, level) -> {
                     if (level > 0) {
