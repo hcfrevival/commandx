@@ -4,6 +4,7 @@ import gg.hcfactions.cx.modules.ICXModule;
 import gg.hcfactions.libs.bukkit.AresPlugin;
 import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -17,7 +18,6 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.potion.PotionEffect;
 
 public class ItemModificationModule implements ICXModule, Listener {
     @Getter public final AresPlugin plugin;
@@ -27,6 +27,8 @@ public class ItemModificationModule implements ICXModule, Listener {
     private boolean disableChorusFruitTeleport;
     private boolean disableFishingPlayers;
     private boolean disableShield;
+    private boolean reduceTridentDamage;
+    private double reduceTridentDamagePercent;
     private boolean reduceAxeDamage;
     private double reduceAxeDamagePercent;
     private boolean milkExcludesInfiniteEffects;
@@ -61,6 +63,8 @@ public class ItemModificationModule implements ICXModule, Listener {
         this.disableFishingPlayers = conf.getBoolean(getKey() + "disable_fishing_players");
         this.reduceAxeDamage = conf.getBoolean(getKey() + "reduce_axe_damage.enabled");
         this.reduceAxeDamagePercent = conf.getDouble(getKey() + "reduce_axe_damage.reduction");
+        this.reduceTridentDamage = conf.getBoolean(getKey() + "reduce_trident_damage.enabled");
+        this.reduceTridentDamagePercent = conf.getDouble(getKey() + "reduce_trident_damage.reduction");
         this.milkExcludesInfiniteEffects = conf.getBoolean(getKey() + "milk_excludes_infinite_effects");
     }
 
@@ -223,7 +227,7 @@ public class ItemModificationModule implements ICXModule, Listener {
 
     @EventHandler
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
-        if (!isEnabled() || !reduceAxeDamage) {
+        if (!isEnabled()) {
             return;
         }
 
@@ -233,10 +237,15 @@ public class ItemModificationModule implements ICXModule, Listener {
             return;
         }
 
-        if (!player.getInventory().getItemInMainHand().getType().name().endsWith("_AXE")) {
+        if (reduceAxeDamage && player.getInventory().getItemInMainHand().getType().name().endsWith("_AXE")) {
+            event.setDamage(event.getDamage() * reduceAxeDamagePercent);
             return;
         }
 
-        event.setDamage(event.getDamage() * reduceAxeDamagePercent);
+        Bukkit.broadcastMessage("pre: " + event.getDamage());
+        if (reduceTridentDamage && player.getInventory().getItemInMainHand().getType().equals(Material.TRIDENT)) {
+            event.setDamage(event.getDamage() * reduceTridentDamagePercent);
+            Bukkit.broadcastMessage("post: " + event.getDamage());
+        }
     }
 }

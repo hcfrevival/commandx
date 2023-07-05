@@ -66,6 +66,9 @@ items:
     reduce_axe_damage:
       enabled: true
       reduction: 0.5
+    reduce_trident_damage:
+      enabled: true
+      reduction: 0.5
 combat:
   elytra:
     remove_elytra_on_projectile_damage: true
