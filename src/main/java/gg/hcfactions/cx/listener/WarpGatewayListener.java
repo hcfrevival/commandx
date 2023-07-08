@@ -1,5 +1,6 @@
 package gg.hcfactions.cx.listener;
 
+import com.destroystokyo.paper.event.player.PlayerTeleportEndGatewayEvent;
 import com.google.common.collect.Sets;
 import gg.hcfactions.cx.CXPermissions;
 import gg.hcfactions.cx.CXService;
@@ -10,6 +11,7 @@ import lombok.Getter;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.EndGateway;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -27,6 +29,15 @@ public final class WarpGatewayListener implements Listener {
     public WarpGatewayListener(CXService service) {
         this.service = service;
         this.recentlyTeleported = Sets.newConcurrentHashSet();
+    }
+
+    @EventHandler (priority = EventPriority.LOWEST)
+    public void onPlayerUseGateway(PlayerTeleportEndGatewayEvent event) {
+        final EndGateway endGateway = event.getGateway();
+        final Block block = endGateway.getBlock();
+
+        event.setCancelled(true);
+        service.getWarpManager().getGateway(block).ifPresent(gateway -> gateway.teleport(event.getPlayer()));
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
