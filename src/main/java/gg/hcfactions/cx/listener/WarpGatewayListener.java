@@ -36,8 +36,10 @@ public final class WarpGatewayListener implements Listener {
         final EndGateway endGateway = event.getGateway();
         final Block block = endGateway.getBlock();
 
-        event.setCancelled(true);
-        service.getWarpManager().getGateway(block).ifPresent(gateway -> gateway.teleport(event.getPlayer()));
+        service.getWarpManager().getGateway(block).ifPresent(gateway -> {
+            event.setCancelled(true);
+            gateway.teleport(event.getPlayer());
+        });
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
