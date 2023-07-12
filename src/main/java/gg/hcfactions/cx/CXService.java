@@ -24,6 +24,7 @@ import gg.hcfactions.libs.bukkit.remap.ERemappedEnchantment;
 import gg.hcfactions.libs.bukkit.scheduler.Scheduler;
 import gg.hcfactions.libs.bukkit.services.IAresService;
 import lombok.Getter;
+import org.bukkit.Material;
 
 import java.util.List;
 
@@ -115,6 +116,16 @@ public final class CXService implements IAresService {
 
             for (ERemappedEnchantment remapped : ERemappedEnchantment.values()) {
                 names.add(remapped.name().toLowerCase());
+            }
+
+            return names;
+        });
+
+        plugin.getCommandManager().getCommandCompletions().registerAsyncCompletion("materials", ctx -> {
+            final List<String> names = Lists.newArrayList();
+
+            for (Material material : Material.values()) {
+                names.add(material.name());
             }
 
             return names;
