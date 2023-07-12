@@ -22,6 +22,11 @@ world:
       - 'CREEPER'
       - 'ENDERMAN'
       - 'BLAZE'
+  entitydrops:
+    types:
+      totem:
+        enabled: true
+        chance: 0.25
   mobstacking:
     enabled: true
     stack_interval: 5

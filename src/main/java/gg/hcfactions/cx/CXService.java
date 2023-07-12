@@ -16,10 +16,7 @@ import gg.hcfactions.cx.modules.player.items.ItemModificationModule;
 import gg.hcfactions.cx.modules.player.items.ItemVelocityModule;
 import gg.hcfactions.cx.modules.player.vanish.VanishManager;
 import gg.hcfactions.cx.modules.reboot.RebootModule;
-import gg.hcfactions.cx.modules.world.EXPBonusModule;
-import gg.hcfactions.cx.modules.world.MobstackModule;
-import gg.hcfactions.cx.modules.world.ShulkerModule;
-import gg.hcfactions.cx.modules.world.WorldModule;
+import gg.hcfactions.cx.modules.world.*;
 import gg.hcfactions.cx.rollback.RollbackManager;
 import gg.hcfactions.cx.warp.WarpManager;
 import gg.hcfactions.libs.bukkit.AresPlugin;
@@ -59,6 +56,7 @@ public final class CXService implements IAresService {
     @Getter public DurabilityModule durabilityModule;
     @Getter public ElytraBalanceModule elytraBalanceModule;
     @Getter public ShulkerModule shulkerModule;
+    @Getter public EntityDropModule entityDropModule;
 
     public CXService(AresPlugin plugin) {
         this.plugin = plugin;
@@ -139,6 +137,7 @@ public final class CXService implements IAresService {
         durabilityModule = new DurabilityModule(plugin);
         elytraBalanceModule = new ElytraBalanceModule(plugin);
         shulkerModule = new ShulkerModule(plugin);
+        entityDropModule = new EntityDropModule(plugin);
 
         animationModule.onEnable();
         knockbackModule.onEnable();
@@ -157,6 +156,7 @@ public final class CXService implements IAresService {
         durabilityModule.onEnable();
         elytraBalanceModule.onEnable();
         shulkerModule.onEnable();
+        entityDropModule.onEnable();
     }
 
     @Override
@@ -178,6 +178,7 @@ public final class CXService implements IAresService {
         durabilityModule.onDisable();
         elytraBalanceModule.onDisable();
         shulkerModule.onDisable();
+        entityDropModule.onDisable();
 
         hologramManager.despawnHolograms();
     }
@@ -207,5 +208,6 @@ public final class CXService implements IAresService {
         durabilityModule.onReload();
         elytraBalanceModule.onReload();
         shulkerModule.onReload();
+        entityDropModule.onReload();
     }
 }
