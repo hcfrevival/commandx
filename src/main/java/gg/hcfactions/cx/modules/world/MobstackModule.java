@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import gg.hcfactions.cx.event.PreMobstackEvent;
 import gg.hcfactions.cx.modules.ICXModule;
 import gg.hcfactions.libs.base.util.Time;
 import gg.hcfactions.libs.bukkit.AresPlugin;
@@ -194,6 +195,13 @@ public final class MobstackModule implements ICXModule, Listener {
                             if (toMerge.contains(nearbyLivingEntity)) {
                                 continue;
                             }
+                        }
+
+                        final PreMobstackEvent mobstackEvent = new PreMobstackEvent(livingEntity, nearbyLivingEntity);
+                        Bukkit.getPluginManager().callEvent(mobstackEvent);
+
+                        if (mobstackEvent.isCancelled()) {
+                            continue;
                         }
 
                         toMerge.add(nearbyLivingEntity);
