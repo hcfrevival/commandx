@@ -35,10 +35,22 @@ public final class WarpGatewayListener implements Listener {
     public void onPlayerUseGateway(PlayerTeleportEndGatewayEvent event) {
         final EndGateway endGateway = event.getGateway();
         final Block block = endGateway.getBlock();
+        final UUID uniqueId = event.getPlayer().getUniqueId();
+        final Player player = event.getPlayer();
 
         service.getWarpManager().getGateway(block).ifPresent(gateway -> {
             event.setCancelled(true);
+
+            if (recentlyTeleported.contains(uniqueId)) {
+                player.sendMessage(ChatColor.RED + "Gateway cooling down...");
+                event.setCancelled(true);
+                return;
+            }
+
             gateway.teleport(event.getPlayer());
+
+            recentlyTeleported.add(uniqueId);
+            new Scheduler(service.getPlugin()).sync(() -> recentlyTeleported.remove(uniqueId)).delay(10 * 20L).run();
         });
     }
 
