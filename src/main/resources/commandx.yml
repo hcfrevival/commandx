@@ -8,6 +8,7 @@ world:
     disable_enderchests: true
     disable_entity_block_changes: true
     disable_explosive_exploits: true
+    disable_egg_spawners: true
     disable_enter_bed_message: true
     nerf_explosive_damage:
       enabled: true

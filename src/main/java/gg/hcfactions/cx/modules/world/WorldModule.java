@@ -33,6 +33,7 @@ import org.bukkit.event.entity.*;
 import org.bukkit.event.player.PlayerBedEnterEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
 import java.util.Set;
@@ -47,6 +48,7 @@ public final class WorldModule implements ICXModule, Listener {
     private boolean disableEntityBlockChanges;
     private boolean disableExplosiveExploits;
     private boolean disableEnterBedMessage;
+    private boolean disableEggSpawners;
     private boolean nerfExplosiveDamage;
     private double nerfExplosiveDamageAmount;
     private boolean witherSpawnCooldown;
@@ -97,6 +99,7 @@ public final class WorldModule implements ICXModule, Listener {
         disableEntityBlockChanges = conf.getBoolean(getKey() + "disable_entity_block_changes");
         disableExplosiveExploits = conf.getBoolean(getKey() + "disable_explosive_exploits");
         disableEnterBedMessage = conf.getBoolean(getKey() + "disable_enter_bed_message");
+        disableEggSpawners = conf.getBoolean(getKey() + "disable_egg_spawners");
         witherSpawnCooldown = conf.getBoolean(getKey() + "wither_spawn_cooldown");
         generateNetherPortalPlatforms = conf.getBoolean(getKey() + "generate_nether_portal_platforms");
         nerfExplosiveDamage = conf.getBoolean(getKey() + "nerf_explosive_damage.enabled");
@@ -125,6 +128,38 @@ public final class WorldModule implements ICXModule, Listener {
                 plugin.getAresLogger().error("bad entity type: " + entityName);
             }
         }
+    }
+
+    @EventHandler (priority = EventPriority.MONITOR)
+    public void onPlayerUseMonsterEgg(PlayerInteractEvent event) {
+        if (!event.useInteractedBlock().equals(Event.Result.ALLOW) || !disableEggSpawners) {
+            return;
+        }
+
+        final Player player = event.getPlayer();
+        final ItemStack item = event.getItem();
+        final Block block = event.getClickedBlock();
+        final Action action = event.getAction();
+
+        if (!action.equals(Action.RIGHT_CLICK_BLOCK)) {
+            return;
+        }
+
+        if (block == null || !block.getType().equals(Material.SPAWNER)) {
+            return;
+        }
+
+        if (item == null || !item.getType().name().endsWith("SPAWN_EGG")) {
+            return;
+        }
+
+        if (player.hasPermission(CXPermissions.CX_MOD)) {
+            return;
+        }
+
+        event.setUseItemInHand(Event.Result.DENY);
+        event.setUseInteractedBlock(Event.Result.DENY);
+        player.sendMessage(ChatColor.RED + "Monster Spawners can not be modified using Spawn Eggs");
     }
 
     @EventHandler (priority = EventPriority.MONITOR)
