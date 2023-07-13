@@ -1,5 +1,6 @@
 package gg.hcfactions.cx.modules.player.items;
 
+import gg.hcfactions.cx.CXPermissions;
 import gg.hcfactions.cx.modules.ICXModule;
 import gg.hcfactions.libs.bukkit.AresPlugin;
 import lombok.Getter;
@@ -12,9 +13,12 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
@@ -32,6 +36,7 @@ public class ItemModificationModule implements ICXModule, Listener {
     private boolean reduceAxeDamage;
     private double reduceAxeDamagePercent;
     private boolean milkExcludesInfiniteEffects;
+    private boolean disableFireworkCrossbows;
 
     public ItemModificationModule(AresPlugin plugin) {
         this.plugin = plugin;
@@ -66,6 +71,7 @@ public class ItemModificationModule implements ICXModule, Listener {
         this.reduceTridentDamage = conf.getBoolean(getKey() + "reduce_trident_damage.enabled");
         this.reduceTridentDamagePercent = conf.getDouble(getKey() + "reduce_trident_damage.reduction");
         this.milkExcludesInfiniteEffects = conf.getBoolean(getKey() + "milk_excludes_infinite_effects");
+        this.disableFireworkCrossbows = conf.getBoolean(getKey() + "disable_crossbow_fireworks");
     }
 
     @Override
@@ -110,6 +116,32 @@ public class ItemModificationModule implements ICXModule, Listener {
 
         player.sendMessage(ChatColor.RED + "This item can not be moved to your off-hand");
         event.setCancelled(true);
+    }
+
+    @EventHandler (priority = EventPriority.HIGHEST)
+    public void onFireworkCrossbow(EntityShootBowEvent event) {
+        if (event.isCancelled() || !disableFireworkCrossbows) {
+            return;
+        }
+
+        if (!(event.getEntity() instanceof final Player player)) {
+            return;
+        }
+
+        if (player.hasPermission(CXPermissions.CX_MOD)) {
+            return;
+        }
+
+        final ItemStack consumable = event.getConsumable();
+
+        if (consumable == null) {
+            return;
+        }
+
+        if (consumable.getType().equals(Material.FIREWORK_ROCKET)) {
+            player.sendMessage(ChatColor.RED + "Fireworks launched by Crossbows are disabled");
+            event.setCancelled(true);
+        }
     }
 
     @EventHandler
