@@ -142,9 +142,9 @@ public final class ElytraBalanceModule implements ICXModule, Listener {
      * Removes elytra if hit by a projectile
      * @param event ProjectileHitEvent
      */
-    @EventHandler (priority = EventPriority.HIGHEST)
+    @EventHandler (priority = EventPriority.MONITOR)
     public void onProjectileHit(ProjectileHitEvent event) {
-        if (!removeElytraOnProjectileDamage) {
+        if (event.isCancelled() || !removeElytraOnProjectileDamage) {
             return;
         }
 
