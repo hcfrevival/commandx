@@ -58,6 +58,7 @@ public final class CXService implements IAresService {
     @Getter public ElytraBalanceModule elytraBalanceModule;
     @Getter public ShulkerModule shulkerModule;
     @Getter public EntityDropModule entityDropModule;
+    @Getter public PotionPrecisionModule potionPrecisionModule;
 
     public CXService(AresPlugin plugin) {
         this.plugin = plugin;
@@ -149,6 +150,7 @@ public final class CXService implements IAresService {
         elytraBalanceModule = new ElytraBalanceModule(plugin);
         shulkerModule = new ShulkerModule(plugin);
         entityDropModule = new EntityDropModule(plugin);
+        potionPrecisionModule = new PotionPrecisionModule(plugin);
 
         animationModule.onEnable();
         knockbackModule.onEnable();
@@ -168,6 +170,7 @@ public final class CXService implements IAresService {
         elytraBalanceModule.onEnable();
         shulkerModule.onEnable();
         entityDropModule.onEnable();
+        potionPrecisionModule.onEnable();
     }
 
     @Override
@@ -190,6 +193,7 @@ public final class CXService implements IAresService {
         elytraBalanceModule.onDisable();
         shulkerModule.onDisable();
         entityDropModule.onDisable();
+        potionPrecisionModule.onDisable();
 
         hologramManager.despawnHolograms();
     }
@@ -220,5 +224,6 @@ public final class CXService implements IAresService {
         elytraBalanceModule.onReload();
         shulkerModule.onReload();
         entityDropModule.onReload();
+        potionPrecisionModule.onReload();
     }
 }
