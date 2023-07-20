@@ -429,8 +429,8 @@ public final class EssentialCommand extends BaseCommand {
         final List<String> rankNames = Lists.newArrayList();
 
         res.forEach((rank, usernames) -> {
-            rankNames.add(rank.getColor() + StringUtils.capitalize(rank.getName()));
-            usernames.forEach(name -> result.add(rank.getColor() + name));
+            rankNames.add(net.md_5.bungee.api.ChatColor.of(rank.getColorCode()) + StringUtils.capitalize(rank.getName()));
+            usernames.forEach(name -> result.add(net.md_5.bungee.api.ChatColor.of(rank.getColorCode()) + name));
         });
 
         rankNames.add("Default");
