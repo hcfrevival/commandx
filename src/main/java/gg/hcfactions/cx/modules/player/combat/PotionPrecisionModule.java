@@ -69,7 +69,6 @@ public final class PotionPrecisionModule implements ICXModule, Listener {
                 if (intensity > triggerThreshold) {
                     final double newIntensity = Math.min(intensity + modifierAmount, 1.0);
                     event.setIntensity(affected, newIntensity);
-                    Bukkit.broadcastMessage("updated intens: " + newIntensity);
                 }
             }
         });
