@@ -349,6 +349,7 @@ public final class AnimationModule implements ICXModule, Listener {
 
         final UUID uniqueId = player.getUniqueId();
         final EntityDamageEvent.DamageCause cause = event.getCause();
+        final boolean isProjectile = event.getEntity() instanceof Projectile;
         final boolean isTickingCause = cause.equals(EntityDamageEvent.DamageCause.POISON)
                 || cause.equals(EntityDamageEvent.DamageCause.FIRE)
                 || cause.equals(EntityDamageEvent.DamageCause.LAVA)
@@ -373,7 +374,7 @@ public final class AnimationModule implements ICXModule, Listener {
             return;
         }
 
-        final int ticks = isTickingCause ? 0 : noDamageTicks;
+        final int ticks = (isProjectile || isTickingCause) ? 0 : noDamageTicks;
 
         if (isTickingCause) {
             if (debugging.contains(player.getUniqueId())) {
