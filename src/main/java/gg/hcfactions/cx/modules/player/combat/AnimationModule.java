@@ -27,6 +27,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -342,6 +343,32 @@ public final class AnimationModule implements ICXModule, Listener {
     }
 
     @EventHandler (priority = EventPriority.MONITOR)
+    public void onProjectileHit(ProjectileHitEvent event) {
+        if (!isEnabled()) {
+            return;
+        }
+
+        if (event.isCancelled()) {
+            return;
+        }
+
+        if (!(event.getHitEntity() instanceof final Player player)) {
+            return;
+        }
+
+        if (player.getNoDamageTicks() <= 0) {
+            return;
+        }
+
+        final int preDamageTicks = player.getNoDamageTicks();
+
+        player.setNoDamageTicks(0);
+        new Scheduler(plugin).sync(() -> {
+            player.setNoDamageTicks(preDamageTicks - 1);
+        }).run();
+    }
+
+    @EventHandler (priority = EventPriority.MONITOR)
     public void onNoDamageTickApplied(EntityDamageEvent event) {
         if (!(event.getEntity() instanceof final Player player)) {
             return;
@@ -349,7 +376,6 @@ public final class AnimationModule implements ICXModule, Listener {
 
         final UUID uniqueId = player.getUniqueId();
         final EntityDamageEvent.DamageCause cause = event.getCause();
-        final boolean isProjectile = event.getEntity() instanceof Projectile;
         final boolean isTickingCause = cause.equals(EntityDamageEvent.DamageCause.POISON)
                 || cause.equals(EntityDamageEvent.DamageCause.FIRE)
                 || cause.equals(EntityDamageEvent.DamageCause.LAVA)
@@ -374,7 +400,7 @@ public final class AnimationModule implements ICXModule, Listener {
             return;
         }
 
-        final int ticks = (isProjectile || isTickingCause) ? 0 : noDamageTicks;
+        final int ticks = (isTickingCause) ? 0 : noDamageTicks;
 
         if (isTickingCause) {
             if (debugging.contains(player.getUniqueId())) {
