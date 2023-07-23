@@ -363,9 +363,7 @@ public final class AnimationModule implements ICXModule, Listener {
         final int preDamageTicks = player.getNoDamageTicks();
 
         player.setNoDamageTicks(0);
-        new Scheduler(plugin).sync(() -> {
-            player.setNoDamageTicks(preDamageTicks - 1);
-        }).run();
+        new Scheduler(plugin).sync(() -> player.setNoDamageTicks(preDamageTicks - 1)).run();
     }
 
     @EventHandler (priority = EventPriority.MONITOR)
