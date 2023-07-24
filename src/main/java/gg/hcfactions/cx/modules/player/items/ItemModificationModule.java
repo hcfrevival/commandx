@@ -5,7 +5,6 @@ import gg.hcfactions.cx.modules.ICXModule;
 import gg.hcfactions.libs.bukkit.AresPlugin;
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -18,7 +17,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
-import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
@@ -31,6 +29,7 @@ public class ItemModificationModule implements ICXModule, Listener {
     private boolean disableChorusFruitTeleport;
     private boolean disableFishingPlayers;
     private boolean disableShield;
+    private boolean disableSpectralMultishot;
     private boolean reduceTridentDamage;
     private double reduceTridentDamagePercent;
     private boolean reduceAxeDamage;
@@ -72,6 +71,7 @@ public class ItemModificationModule implements ICXModule, Listener {
         this.reduceTridentDamagePercent = conf.getDouble(getKey() + "reduce_trident_damage.reduction");
         this.milkExcludesInfiniteEffects = conf.getBoolean(getKey() + "milk_excludes_infinite_effects");
         this.disableFireworkCrossbows = conf.getBoolean(getKey() + "disable_crossbow_fireworks");
+        this.disableSpectralMultishot = conf.getBoolean(getKey() + "disable_spectral_multishot");
     }
 
     @Override
@@ -119,8 +119,8 @@ public class ItemModificationModule implements ICXModule, Listener {
     }
 
     @EventHandler (priority = EventPriority.HIGHEST)
-    public void onFireworkCrossbow(EntityShootBowEvent event) {
-        if (event.isCancelled() || !disableFireworkCrossbows) {
+    public void onCrossbowLimit(EntityShootBowEvent event) {
+        if (event.isCancelled()) {
             return;
         }
 
@@ -138,8 +138,14 @@ public class ItemModificationModule implements ICXModule, Listener {
             return;
         }
 
-        if (consumable.getType().equals(Material.FIREWORK_ROCKET)) {
+        if (disableFireworkCrossbows && consumable.getType().equals(Material.FIREWORK_ROCKET)) {
             player.sendMessage(ChatColor.RED + "Fireworks launched by Crossbows are disabled");
+            event.setCancelled(true);
+            return;
+        }
+
+        if (disableSpectralMultishot && consumable.getType().equals(Material.SPECTRAL_ARROW)) {
+            player.sendMessage(ChatColor.RED + "Spectral Arrows launched by Crossbows are disabled");
             event.setCancelled(true);
         }
     }

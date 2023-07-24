@@ -69,6 +69,7 @@ items:
     disable_fishing_players: true
     disable_shields: true
     disable_crossbow_fireworks: true
+    disable_spectral_multishot: true
     milk_excludes_infinite_effects: true
     reduce_axe_damage:
       enabled: true
