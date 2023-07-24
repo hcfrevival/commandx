@@ -52,6 +52,7 @@ public final class AnimationModule implements ICXModule, Listener {
     private AccountService accountService;
     private BukkitTask attackQueueTask;
     private final Queue<QueuedAttack> queuedAttacks;
+    private final Set<UUID> recentlyTakenProjectileDamage;
     private final Set<UUID> recentlyTakenTickDamage;
 
     public AnimationModule(AresPlugin plugin) {
@@ -60,6 +61,7 @@ public final class AnimationModule implements ICXModule, Listener {
         this.enabled = false;
         this.accountService = null;
         this.queuedAttacks = Queues.newConcurrentLinkedQueue();
+        this.recentlyTakenProjectileDamage = Sets.newConcurrentHashSet();
         this.recentlyTakenTickDamage = Sets.newConcurrentHashSet();
         this.debugging = Sets.newConcurrentHashSet();
     }
@@ -356,14 +358,19 @@ public final class AnimationModule implements ICXModule, Listener {
             return;
         }
 
-        if (player.getNoDamageTicks() <= 0) {
+        if (player.getNoDamageTicks() <= 0 || recentlyTakenProjectileDamage.contains(player.getUniqueId())) {
             return;
         }
 
+        final UUID uniqueId = player.getUniqueId();
         final int preDamageTicks = player.getNoDamageTicks();
 
         player.setNoDamageTicks(0);
-        new Scheduler(plugin).sync(() -> player.setNoDamageTicks(preDamageTicks - 1)).run();
+
+        new Scheduler(plugin).sync(() -> {
+            player.setNoDamageTicks(preDamageTicks - 1);
+            recentlyTakenProjectileDamage.remove(uniqueId);
+        }).run();
     }
 
     @EventHandler (priority = EventPriority.MONITOR)
