@@ -1,6 +1,7 @@
 package gg.hcfactions.cx.modules.reboot;
 
 import gg.hcfactions.cx.modules.ICXModule;
+import gg.hcfactions.cx.modules.reboot.event.ServerRestartEvent;
 import gg.hcfactions.libs.base.consumer.Promise;
 import gg.hcfactions.libs.base.util.Time;
 import gg.hcfactions.libs.bukkit.AresPlugin;
@@ -9,6 +10,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.scheduler.BukkitTask;
@@ -70,7 +72,15 @@ public final class RebootModule implements ICXModule {
             }
 
             if (isRebootInProgress() && Time.now() >= rebootTime) {
-                new Scheduler(plugin).sync(RestartCommand::restart).run();
+                Bukkit.getServer().savePlayers();
+                Bukkit.getWorlds().forEach(World::save);
+
+                final ServerRestartEvent restartEvent = new ServerRestartEvent();
+                Bukkit.getPluginManager().callEvent(restartEvent);
+
+                if (!restartEvent.isCancelled()) {
+                    new Scheduler(plugin).sync(RestartCommand::restart).run();
+                }
             }
         }).repeat(20L, 20L).run();
     }
