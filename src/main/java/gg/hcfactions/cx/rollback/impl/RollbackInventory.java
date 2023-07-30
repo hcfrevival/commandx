@@ -21,7 +21,7 @@ public final class RollbackInventory {
     @Getter @Setter public long expire;
 
     public boolean isExpired() {
-        return expire >= Time.now();
+        return expire <= Time.now();
     }
 
     public void give(Player player) {

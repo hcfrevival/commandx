@@ -54,6 +54,6 @@ public final class RollbackManager {
      * @return RollbackInventory
      */
     public RollbackInventory createInventory(String username, List<ItemStack> contents, List<ItemStack> armor) {
-        return new RollbackInventory(UUID.randomUUID(), username, contents, armor, Time.now() + ((3600*1000L)*8));
+        return new RollbackInventory(UUID.randomUUID(), username, contents, armor, Time.now() + (28800*1000L));
     }
 }
