@@ -93,6 +93,7 @@ public class ItemModificationModule implements ICXModule, Listener {
         }
 
         event.setCancelled(true);
+        event.setItem(new ItemStack(Material.BUCKET, 1));
 
         player.getActivePotionEffects().forEach(potionEffect -> {
             if (!potionEffect.isInfinite()) {
