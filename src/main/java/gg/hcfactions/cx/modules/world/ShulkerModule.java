@@ -15,6 +15,7 @@ import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
@@ -23,10 +24,12 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -75,6 +78,15 @@ public final class ShulkerModule implements ICXModule, Listener {
                         && ls.getBlock().getY() == block.getY()
                         && ls.getBlock().getZ() == block.getZ()
                         && ls.getBlock().getWorld().getName().equalsIgnoreCase(block.getWorld().getName()))
+                .findFirst();
+    }
+
+    private Optional<LockedShulkerBox> getLockedShulkerByArmorStand(ArmorStand armorStand) {
+        final PLocatable loc = new PLocatable(armorStand);
+
+        return lockedShulkerRepository
+                .stream()
+                .filter(ls -> ls.getHologram().getOrigin().getDistance(loc) > 0.0 && ls.getHologram().getOrigin().getDistance(loc) < 1.0)
                 .findFirst();
     }
 
@@ -155,6 +167,15 @@ public final class ShulkerModule implements ICXModule, Listener {
                 player.sendMessage(ChatColor.RED + "This Shulker Box will unlock in " + ChatColor.RED + "" + ChatColor.BOLD + Time.convertToDecimal(lockedShulkerBox.getExpire() - Time.now()) + ChatColor.RED + "s");
             }
         });
+    }
+
+    @EventHandler (priority = EventPriority.HIGHEST)
+    public void onArmorStandInteract(PlayerInteractEntityEvent event) {
+        if (!(event.getRightClicked() instanceof final ArmorStand armorStand)) {
+            return;
+        }
+
+        getLockedShulkerByArmorStand(armorStand).ifPresent(holo -> event.setCancelled(true));
     }
 
     public class LockedShulkerBox {
