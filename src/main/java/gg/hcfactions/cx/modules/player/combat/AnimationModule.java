@@ -358,7 +358,12 @@ public final class AnimationModule implements ICXModule, Listener {
             return;
         }
 
-        if (player.getNoDamageTicks() <= 0 || recentlyTakenProjectileDamage.contains(player.getUniqueId())) {
+        if (player.getNoDamageTicks() <= 0) {
+            return;
+        }
+
+        if (recentlyTakenProjectileDamage.contains(player.getUniqueId())) {
+            event.setCancelled(true);
             return;
         }
 
@@ -368,7 +373,7 @@ public final class AnimationModule implements ICXModule, Listener {
         player.setNoDamageTicks(0);
 
         new Scheduler(plugin).sync(() -> player.setNoDamageTicks(preDamageTicks - 1)).run();
-        new Scheduler(plugin).sync(() -> recentlyTakenProjectileDamage.remove(uniqueId)).delay(10L).run();
+        new Scheduler(plugin).sync(() -> recentlyTakenProjectileDamage.remove(uniqueId)).delay(noDamageTicks).run();
     }
 
     @EventHandler (priority = EventPriority.MONITOR)
