@@ -262,6 +262,7 @@ public class ItemModificationModule implements ICXModule, Listener {
         }
 
         event.setCancelled(true);
+        event.getHook().setHookedEntity(null);
     }
 
     @EventHandler
