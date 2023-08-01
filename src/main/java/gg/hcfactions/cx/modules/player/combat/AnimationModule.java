@@ -373,8 +373,8 @@ public final class AnimationModule implements ICXModule, Listener {
         player.setNoDamageTicks(0);
         recentlyTakenProjectileDamage.add(uniqueId);
 
+        new Scheduler(plugin).sync(() -> recentlyTakenProjectileDamage.remove(uniqueId)).delay(20L).run();
         new Scheduler(plugin).sync(() -> player.setNoDamageTicks(preDamageTicks - 1)).run();
-        new Scheduler(plugin).sync(() -> recentlyTakenProjectileDamage.remove(uniqueId)).delay(noDamageTicks).run();
     }
 
     @EventHandler (priority = EventPriority.MONITOR)
