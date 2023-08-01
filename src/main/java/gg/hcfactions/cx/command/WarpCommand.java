@@ -5,6 +5,7 @@ import gg.hcfactions.cx.CXService;
 import gg.hcfactions.cx.warp.impl.Warp;
 import gg.hcfactions.libs.acf.BaseCommand;
 import gg.hcfactions.libs.acf.annotation.*;
+import gg.hcfactions.libs.base.consumer.FailablePromise;
 import gg.hcfactions.libs.base.consumer.Promise;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -93,6 +94,25 @@ public final class WarpCommand extends BaseCommand {
             @Override
             public void reject(String s) {
                 player.sendMessage(ChatColor.RED + "Failed to create: " + s);
+            }
+        });
+    }
+
+    @Subcommand("gateway create radius")
+    @Description("Update any nearby End Gateway blocks to become a Warp Gateway Block")
+    @CommandPermission(CXPermissions.CX_ADMIN)
+    @CommandCompletion("@warps")
+    @Syntax("<radius> <destination>")
+    public void onGatewayRadiusCreate(Player player, int radius, String warpName) {
+        service.getWarpManager().getExecutor().createGatewayRadius(player, warpName, radius, new FailablePromise<>() {
+            @Override
+            public void resolve(Integer integer) {
+                player.sendMessage(ChatColor.GREEN + "Updated " + integer + " gateway blocks");
+            }
+
+            @Override
+            public void reject(String s) {
+                player.sendMessage(ChatColor.RED + "Failed to update gateway blocks: " + s);
             }
         });
     }

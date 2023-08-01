@@ -71,6 +71,7 @@ public final class WarpManager {
             final String worldName = conf.getString(key + "world");
 
             final Warp warp = new Warp(x, y, z, yaw, pitch, worldName, warpName);
+
             warpRepository.add(warp);
         }
 
@@ -101,6 +102,11 @@ public final class WarpManager {
 
             if (warpQuery.isEmpty()) {
                 service.getPlugin().getAresLogger().warn("failed to link gateway, warp: " + destinationName + " was not found");
+                continue;
+            }
+
+            if (gatewayRepository.stream().anyMatch(g -> g.getBlock().getX() == x && g.getBlock().getY() == y && g.getBlock().getZ() == z && g.getBlock().getWorldName().equalsIgnoreCase(worldName))) {
+                service.getPlugin().getAresLogger().warn("found duplicate warp gateway for " + destinationName);
                 continue;
             }
 

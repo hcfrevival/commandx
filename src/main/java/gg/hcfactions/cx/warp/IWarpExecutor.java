@@ -1,5 +1,6 @@
 package gg.hcfactions.cx.warp;
 
+import gg.hcfactions.libs.base.consumer.FailablePromise;
 import gg.hcfactions.libs.base.consumer.Promise;
 import org.bukkit.entity.Player;
 
@@ -38,6 +39,16 @@ public interface IWarpExecutor {
      * @param promise Promise
      */
     void createGateway(Player player, String destinationName, Promise promise);
+
+    /**
+     * Modify all nearby END_GATEWAY blocks to be Gateways to the desired destination
+     *
+     * @param player Player
+     * @param destinationName Destination warp name
+     * @param radius Radius to search for End Gateway Blockd
+     * @param promise Promise
+     */
+    void createGatewayRadius(Player player, String destinationName, int radius, FailablePromise<Integer> promise);
 
     /**
      * Delete a gateway and all portal blocks associated to it
