@@ -69,6 +69,14 @@ public final class VanishManager implements Listener {
     }
 
     /**
+     * @param uuid Bukkit UUID
+     * @return True if player is vanished
+     */
+    public boolean isVanished(UUID uuid) {
+        return vanishedPlayers.contains(uuid);
+    }
+
+    /**
      * Vanish the player from the server
      * @param player Player to vanish
      */
