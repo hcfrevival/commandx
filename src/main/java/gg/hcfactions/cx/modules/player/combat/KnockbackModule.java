@@ -3,11 +3,13 @@ package gg.hcfactions.cx.modules.player.combat;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import gg.hcfactions.cx.command.KnockbackCommand;
+import gg.hcfactions.cx.event.PlayerSprintResetEvent;
 import gg.hcfactions.cx.modules.ICXModule;
 import gg.hcfactions.libs.bukkit.AresPlugin;
 import gg.hcfactions.libs.bukkit.events.impl.PlayerDamagePlayerEvent;
 import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.Bukkit;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -194,6 +196,9 @@ public final class KnockbackModule implements ICXModule, Listener {
         int i = attacker.getInventory().getItemInMainHand().getEnchantmentLevel(Enchantment.KNOCKBACK);
 
         if (recentlySprinted.contains(damager.getUniqueId())) {
+            final PlayerSprintResetEvent resetEvent = new PlayerSprintResetEvent(attacker);
+            Bukkit.getPluginManager().callEvent(resetEvent);
+
             i += 1;
         }
 
