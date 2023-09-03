@@ -185,7 +185,7 @@ public final class KnockbackModule implements ICXModule, Listener {
         double magnitude = Math.sqrt(d0 * d0 + d1 * d1);
 
         // Get player knockback taken before any friction applied
-        Vector playerVelocity = damaged.getVelocity();
+        final Vector playerVelocity = damaged.getVelocity();
 
         // apply friction then add the base knockback
         playerVelocity.setX((playerVelocity.getX() / 2) - (d0 / magnitude * knockbackHorizontal));
@@ -193,13 +193,16 @@ public final class KnockbackModule implements ICXModule, Listener {
         playerVelocity.setZ((playerVelocity.getZ() / 2) - (d1 / magnitude * knockbackHorizontal));
 
         // Calculate bonus knockback for sprinting or knockback enchantment levels
-        int i = attacker.getInventory().getItemInMainHand().getEnchantmentLevel(Enchantment.KNOCKBACK);
+        double i = attacker.getInventory().getItemInMainHand().getEnchantmentLevel(Enchantment.KNOCKBACK);
 
-        if (recentlySprinted.contains(damager.getUniqueId())) {
-            final PlayerSprintResetEvent resetEvent = new PlayerSprintResetEvent(attacker);
-            Bukkit.getPluginManager().callEvent(resetEvent);
+        if (damager.isSprinting()) {
+            if (recentlySprinted.contains(damager.getUniqueId())) {
+                final PlayerSprintResetEvent resetEvent = new PlayerSprintResetEvent(attacker);
+                Bukkit.getPluginManager().callEvent(resetEvent);
+                i += 0.5;
+            }
 
-            i += 1;
+            i += 1.0;
         }
 
         if (playerVelocity.getY() > knockbackVerticalLimit)
