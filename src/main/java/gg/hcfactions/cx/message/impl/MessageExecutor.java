@@ -10,6 +10,8 @@ import gg.hcfactions.libs.bukkit.services.impl.account.model.AresAccount;
 import gg.hcfactions.libs.bukkit.services.impl.punishments.PunishmentService;
 import gg.hcfactions.libs.bukkit.services.impl.punishments.model.EPunishmentType;
 import gg.hcfactions.libs.bukkit.services.impl.punishments.model.impl.Punishment;
+import gg.hcfactions.libs.bukkit.services.impl.ranks.RankService;
+import gg.hcfactions.libs.bukkit.services.impl.ranks.model.impl.AresRank;
 import gg.hcfactions.libs.bukkit.utils.Players;
 import lombok.Getter;
 import org.bukkit.Bukkit;
@@ -25,6 +27,7 @@ public record MessageExecutor(@Getter MessageManager manager) implements IMessag
     public void sendMessage(Player sender, Player receiver, String message, Promise promise) {
         final AccountService acs = (AccountService)manager.getService().getPlugin().getService(AccountService.class);
         final PunishmentService ps = (PunishmentService)manager.getService().getPlugin().getService(PunishmentService.class);
+        final RankService rs = (RankService)manager.getService().getPlugin().getService(RankService.class);
         final boolean admin = sender.hasPermission(CXPermissions.CX_MOD);
 
         if (acs == null) {
@@ -34,6 +37,11 @@ public record MessageExecutor(@Getter MessageManager manager) implements IMessag
 
         if (ps == null) {
             promise.reject("Failed to obtain Punishment Service");
+            return;
+        }
+
+        if (rs == null) {
+            promise.reject("Failed to obtain Rank Service");
             return;
         }
 
@@ -84,8 +92,13 @@ public record MessageExecutor(@Getter MessageManager manager) implements IMessag
                     return;
                 }
 
-                receiver.sendMessage(ChatColor.GRAY + "(From " + sender.getName() + "): " + ChatColor.RESET + message);
-                sender.sendMessage(ChatColor.GRAY + "(To " + receiver.getName() + "): " + ChatColor.RESET + message);
+                final AresRank senderRank = rs.getHighestRank(sender);
+                final AresRank receiverRank = rs.getHighestRank(receiver);
+                final String senderName = (senderRank != null) ? net.md_5.bungee.api.ChatColor.of(senderRank.getColorCode()) + sender.getName() : ChatColor.RESET + sender.getName();
+                final String receiverName = (receiverRank != null) ? net.md_5.bungee.api.ChatColor.of(receiverRank.getColorCode()) + receiverRank.getName() : ChatColor.RESET + receiver.getName();
+
+                receiver.sendMessage(ChatColor.GRAY + "(From " + senderName + "): " + ChatColor.RESET + message);
+                sender.sendMessage(ChatColor.GRAY + "(To " + receiverName + "): " + ChatColor.RESET + message);
 
                 if (receiverAccount.getSettings().isEnabled(AresAccount.Settings.SettingValue.PRIVATE_MESSAGES_PING_ENABLED)) {
                     Players.playSound(receiver, Sound.BLOCK_NOTE_BLOCK_PLING);
@@ -101,6 +114,7 @@ public record MessageExecutor(@Getter MessageManager manager) implements IMessag
     public void sendReply(Player sender, String message, Promise promise) {
         final AccountService acs = (AccountService)manager.getService().getPlugin().getService(AccountService.class);
         final PunishmentService ps = (PunishmentService)manager.getService().getPlugin().getService(PunishmentService.class);
+        final RankService rs = (RankService)manager.getService().getPlugin().getService(RankService.class);
         final Optional<UUID> replyId = manager.getRecentlyMessaged(sender);
 
         if (acs == null) {
@@ -110,6 +124,11 @@ public record MessageExecutor(@Getter MessageManager manager) implements IMessag
 
         if (ps == null) {
             promise.reject("Failed to obtain Punishment Service");
+            return;
+        }
+
+        if (rs == null) {
+            promise.reject("Failed to obtain Rank Service");
             return;
         }
 
@@ -163,8 +182,13 @@ public record MessageExecutor(@Getter MessageManager manager) implements IMessag
                     return;
                 }
 
-                receiver.sendMessage(ChatColor.GRAY + "(From " + sender.getName() + "): " + ChatColor.RESET + message);
-                sender.sendMessage(ChatColor.GRAY + "(To " + receiver.getName() + "): " + ChatColor.RESET + message);
+                final AresRank senderRank = rs.getHighestRank(sender);
+                final AresRank receiverRank = rs.getHighestRank(receiver);
+                final String senderName = (senderRank != null) ? net.md_5.bungee.api.ChatColor.of(senderRank.getColorCode()) + sender.getName() : ChatColor.RESET + sender.getName();
+                final String receiverName = (receiverRank != null) ? net.md_5.bungee.api.ChatColor.of(receiverRank.getColorCode()) + receiverRank.getName() : ChatColor.RESET + receiver.getName();
+
+                receiver.sendMessage(ChatColor.GRAY + "(From " + senderName + "): " + ChatColor.RESET + message);
+                sender.sendMessage(ChatColor.GRAY + "(To " + receiverName + "): " + ChatColor.RESET + message);
 
                 if (receiverAccount.getSettings().isEnabled(AresAccount.Settings.SettingValue.PRIVATE_MESSAGES_PING_ENABLED)) {
                     Players.playSound(receiver, Sound.BLOCK_NOTE_BLOCK_PLING);
