@@ -95,10 +95,10 @@ public record MessageExecutor(@Getter MessageManager manager) implements IMessag
                 final AresRank senderRank = rs.getHighestRank(sender);
                 final AresRank receiverRank = rs.getHighestRank(receiver);
                 final String senderName = (senderRank != null) ? net.md_5.bungee.api.ChatColor.of(senderRank.getColorCode()) + sender.getName() : ChatColor.RESET + sender.getName();
-                final String receiverName = (receiverRank != null) ? net.md_5.bungee.api.ChatColor.of(receiverRank.getColorCode()) + receiverRank.getName() : ChatColor.RESET + receiver.getName();
+                final String receiverName = (receiverRank != null) ? net.md_5.bungee.api.ChatColor.of(receiverRank.getColorCode()) + receiver.getName() : ChatColor.RESET + receiver.getName();
 
-                receiver.sendMessage(ChatColor.GRAY + "(From " + senderName + "): " + ChatColor.RESET + message);
-                sender.sendMessage(ChatColor.GRAY + "(To " + receiverName + "): " + ChatColor.RESET + message);
+                receiver.sendMessage(ChatColor.GRAY + "(From " + senderName + ChatColor.GRAY + "): " + ChatColor.RESET + message);
+                sender.sendMessage(ChatColor.GRAY + "(To " + receiverName + ChatColor.GRAY + "): " + ChatColor.RESET + message);
 
                 if (receiverAccount.getSettings().isEnabled(AresAccount.Settings.SettingValue.PRIVATE_MESSAGES_PING_ENABLED)) {
                     Players.playSound(receiver, Sound.BLOCK_NOTE_BLOCK_PLING);
@@ -185,10 +185,10 @@ public record MessageExecutor(@Getter MessageManager manager) implements IMessag
                 final AresRank senderRank = rs.getHighestRank(sender);
                 final AresRank receiverRank = rs.getHighestRank(receiver);
                 final String senderName = (senderRank != null) ? net.md_5.bungee.api.ChatColor.of(senderRank.getColorCode()) + sender.getName() : ChatColor.RESET + sender.getName();
-                final String receiverName = (receiverRank != null) ? net.md_5.bungee.api.ChatColor.of(receiverRank.getColorCode()) + receiverRank.getName() : ChatColor.RESET + receiver.getName();
+                final String receiverName = (receiverRank != null) ? net.md_5.bungee.api.ChatColor.of(receiverRank.getColorCode()) + receiver.getName() : ChatColor.RESET + receiver.getName();
 
-                receiver.sendMessage(ChatColor.GRAY + "(From " + senderName + "): " + ChatColor.RESET + message);
-                sender.sendMessage(ChatColor.GRAY + "(To " + receiverName + "): " + ChatColor.RESET + message);
+                receiver.sendMessage(ChatColor.GRAY + "(From " + senderName + ChatColor.GRAY + "): " + ChatColor.RESET + message);
+                sender.sendMessage(ChatColor.GRAY + "(To " + receiverName + ChatColor.GRAY + "): " + ChatColor.RESET + message);
 
                 if (receiverAccount.getSettings().isEnabled(AresAccount.Settings.SettingValue.PRIVATE_MESSAGES_PING_ENABLED)) {
                     Players.playSound(receiver, Sound.BLOCK_NOTE_BLOCK_PLING);
