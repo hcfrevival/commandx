@@ -5,6 +5,7 @@ import gg.hcfactions.cx.broadcasts.BroadcastManager;
 import gg.hcfactions.cx.command.*;
 import gg.hcfactions.cx.hologram.HologramManager;
 import gg.hcfactions.cx.kits.KitManager;
+import gg.hcfactions.cx.listener.NPCListener;
 import gg.hcfactions.cx.listener.SignListener;
 import gg.hcfactions.cx.listener.WarpGatewayListener;
 import gg.hcfactions.cx.message.MessageManager;
@@ -17,6 +18,7 @@ import gg.hcfactions.cx.modules.player.items.ItemVelocityModule;
 import gg.hcfactions.cx.modules.player.vanish.VanishManager;
 import gg.hcfactions.cx.modules.reboot.RebootModule;
 import gg.hcfactions.cx.modules.world.*;
+import gg.hcfactions.cx.npc.NPCManager;
 import gg.hcfactions.cx.rollback.RollbackManager;
 import gg.hcfactions.cx.warp.WarpManager;
 import gg.hcfactions.libs.bukkit.AresPlugin;
@@ -39,6 +41,7 @@ public final class CXService implements IAresService {
     @Getter public BroadcastManager broadcastManager;
     @Getter public HologramManager hologramManager;
     @Getter public RollbackManager rollbackManager;
+    @Getter public NPCManager npcManager;
 
     @Getter public RebootModule rebootModule;
     @Getter public AnimationModule animationModule;
@@ -75,12 +78,15 @@ public final class CXService implements IAresService {
         plugin.registerCommand(new KitCommand(this));
         plugin.registerCommand(new HologramCommand(this));
         plugin.registerCommand(new RollbackCommand(this));
+        plugin.registerCommand(new NPCCommand(this));
 
         plugin.registerListener(new SignListener(this));
         plugin.registerListener(new WarpGatewayListener(this));
+        plugin.registerListener(new NPCListener(this));
 
         messageManager = new MessageManager(this);
         vanishManager = new VanishManager(this);
+        rollbackManager = new RollbackManager(this);
 
         broadcastManager = new BroadcastManager(this);
         broadcastManager.loadBroadcasts();
@@ -97,7 +103,9 @@ public final class CXService implements IAresService {
         hologramManager.loadHolograms();
         new Scheduler(plugin).sync(() -> hologramManager.spawnHolograms()).delay(20L).run();
 
-        rollbackManager = new RollbackManager(this);
+        npcManager = new NPCManager(this);
+        npcManager.loadNpcs();
+        npcManager.spawnNpcs();
 
         // command completions
         plugin.getCommandManager().getCommandCompletions().registerAsyncCompletion("warps", ctx -> {
@@ -132,6 +140,16 @@ public final class CXService implements IAresService {
             return names;
         });
 
+        plugin.getCommandManager().getCommandCompletions().registerAsyncCompletion("npcs", ctx -> {
+            final List<String> names = Lists.newArrayList();
+
+            if (npcManager != null) {
+                npcManager.getNpcRepository().forEach(npc -> names.add(npc.getProfileUsername()));
+            }
+
+            return names;
+        });
+
         animationModule = new AnimationModule(plugin);
         knockbackModule = new KnockbackModule(plugin);
         itemVelocityModule = new ItemVelocityModule(plugin);
@@ -151,7 +169,6 @@ public final class CXService implements IAresService {
         shulkerModule = new ShulkerModule(plugin);
         entityDropModule = new EntityDropModule(plugin);
         potionPrecisionModule = new PotionPrecisionModule(plugin);
-
         animationModule.onEnable();
         knockbackModule.onEnable();
         itemVelocityModule.onEnable();
@@ -196,6 +213,7 @@ public final class CXService implements IAresService {
         potionPrecisionModule.onDisable();
 
         hologramManager.despawnHolograms();
+        npcManager.unloadNpcs();
     }
 
     @Override
@@ -203,8 +221,10 @@ public final class CXService implements IAresService {
         warpManager.loadWarps();
         warpManager.loadGateways();
         kitManager.loadKits();
+        npcManager.loadNpcs();
         broadcastManager.loadBroadcasts();
         hologramManager.reloadHolograms();
+        npcManager.unloadNpcs();
 
         animationModule.onReload();
         knockbackModule.onReload();
