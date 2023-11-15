@@ -41,6 +41,8 @@ public final class KnockbackModule implements ICXModule, Listener {
     @Getter @Setter public double knockbackVerticalLimit = 0.4D;
     @Getter @Setter public double knockbackExtraVertical = 0.085D;
     @Getter @Setter public double knockbackExtraHorizontal = 0.425D;
+    @Getter @Setter public double sprintResetModifier = 1.0D;
+    @Getter @Setter public double sprintModifier = 0.5D;
 
     private final Map<UUID, Vector> velocityCache;
     private final Set<UUID> recentlySprinted;
@@ -86,6 +88,8 @@ public final class KnockbackModule implements ICXModule, Listener {
         knockbackExtraVertical = conf.getDouble(getKey() + "values.extra_vertical");
         knockbackExtraHorizontal = conf.getDouble(getKey() + "values.extra_horizontal");
         knockbackVerticalLimit = conf.getDouble(getKey() + "values.vertical_limit");
+        sprintResetModifier = conf.getDouble(getKey() + "values.sprint_reset_modifier");
+        sprintModifier = conf.getDouble(getKey() + "values.sprint_modifier");
     }
 
     public void saveConfig() {
@@ -95,6 +99,8 @@ public final class KnockbackModule implements ICXModule, Listener {
         conf.set(getKey() + "values.extra_vertical", getKnockbackExtraVertical());
         conf.set(getKey() + "values.extra_horizontal", getKnockbackExtraHorizontal());
         conf.set(getKey() + "values.vertical_limit", getKnockbackVerticalLimit());
+        conf.set(getKey() + "values.sprint_reset_modifier", getSprintResetModifier());
+        conf.set(getKey() + "values.sprint_modifier", getSprintModifier());
         plugin.saveConfiguration("commandx", conf);
     }
 
@@ -199,10 +205,10 @@ public final class KnockbackModule implements ICXModule, Listener {
             if (recentlySprinted.contains(damager.getUniqueId())) {
                 final PlayerSprintResetEvent resetEvent = new PlayerSprintResetEvent(attacker);
                 Bukkit.getPluginManager().callEvent(resetEvent);
-                i += 0.5;
+                i += sprintResetModifier;
             }
 
-            i += 1.0;
+            i += sprintModifier;
         }
 
         if (playerVelocity.getY() > knockbackVerticalLimit)

@@ -24,14 +24,16 @@ public final class KnockbackCommand extends BaseCommand {
         player.sendMessage(ChatColor.GRAY + " - Extra Horizontal: " + module.getKnockbackExtraHorizontal());
         player.sendMessage(ChatColor.GRAY + " - Extra Vertical: " + module.getKnockbackExtraVertical());
         player.sendMessage(ChatColor.GRAY + " - Vertical Clamp: " + module.getKnockbackVerticalLimit());
+        player.sendMessage(ChatColor.GRAY + " - Sprint Reset Modifier: " + module.getSprintResetModifier());
+        player.sendMessage(ChatColor.GRAY + " - Sprint Modifier: " + module.getSprintModifier());
         player.sendMessage(ChatColor.GRAY + " - Ground Check: " + module.isRequireGroundCheck());
     }
 
     @Subcommand("set")
-    @Syntax("<h|v|eh|ev|vl> <amount>")
+    @Syntax("<h|v|eh|ev|vl|srm|sm> <amount>")
     @Description("Update the knockback values")
     @CommandPermission(CXPermissions.CX_ADMIN)
-    public void onSetKnockbackValues(Player player, @Values("h|v|eh|ev|vl") String fieldName, String valueName) {
+    public void onSetKnockbackValues(Player player, @Values("h|v|eh|ev|vl|srm|sm") String fieldName, String valueName) {
         double v;
         try {
             v = Double.parseDouble(valueName);
@@ -72,6 +74,20 @@ public final class KnockbackCommand extends BaseCommand {
             module.setKnockbackVerticalLimit(v);
             module.saveConfig();
             player.sendMessage(ChatColor.GREEN + "Updated vertical limit to " + v);
+            return;
+        }
+
+        if (fieldName.equalsIgnoreCase("srm")) {
+            module.setSprintResetModifier(v);
+            module.saveConfig();
+            player.sendMessage(ChatColor.GREEN + "Updated sprint reset modifier to " + v);
+            return;
+        }
+
+        if (fieldName.equalsIgnoreCase("sm")) {
+            module.setSprintModifier(v);
+            module.saveConfig();
+            player.sendMessage(ChatColor.GREEN + "Updated sprint modifier to " + v);
             return;
         }
 
