@@ -125,6 +125,10 @@ public interface IAresNPC {
     }
 
     default void despawn() {
+        if (getEntity() == null || !isSpawned()) {
+            return;
+        }
+
         Bukkit.getOnlinePlayers().forEach(viewer -> {
             final ServerGamePacketListenerImpl conn = ((CraftPlayer)viewer).getHandle().connection;
             conn.send(new ClientboundRemoveEntitiesPacket(getEntity().getId()));
