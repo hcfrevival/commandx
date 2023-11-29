@@ -2,20 +2,21 @@ package gg.hcfactions.cx.modules.player.combat;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import gg.hcfactions.cx.event.EnchantLimitApplyEvent;
 import gg.hcfactions.cx.modules.ICXModule;
 import gg.hcfactions.libs.bukkit.AresPlugin;
 import gg.hcfactions.libs.bukkit.remap.ERemappedEnchantment;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang.StringUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.enchantments.EnchantmentOffer;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
+import org.bukkit.event.*;
 import org.bukkit.event.enchantment.EnchantItemEvent;
 import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -161,19 +162,28 @@ public final class EnchantLimitModule implements ICXModule, Listener {
             }
         }
 
-        toRemove.forEach(removed -> {
-            item.removeEnchantment(removed);
+        final Map<Enchantment, Integer> eventValues = Maps.newHashMap();
+        eventValues.putAll(toLower);
+        toRemove.forEach(removed -> eventValues.put(removed, -1));
 
-            player.sendMessage(ChatColor.DARK_RED + "Removed Enchantment" + ChatColor.RED + ": " +
-                    ChatColor.WHITE + StringUtils.capitalize(removed.getKey().getKey().toLowerCase().replace("_", " ")));
-        });
+        final EnchantLimitApplyEvent applyEvent = new EnchantLimitApplyEvent(player, item, eventValues);
+        Bukkit.getPluginManager().callEvent(applyEvent);
 
-        toLower.keySet().forEach(lowered -> {
-            final int level = toLower.get(lowered);
-            item.addUnsafeEnchantment(lowered, level);
+        if (applyEvent.isCancelled()) {
+            return;
+        }
 
-            player.sendMessage(ChatColor.BLUE + "Updated Enchantment" + ChatColor.AQUA + ": " +
-                    ChatColor.WHITE + StringUtils.capitalize(lowered.getKey().getKey().toLowerCase().replace("_", " ")));
+        applyEvent.getLimitedEnchantments().forEach((enchantment, newValue) -> {
+            if (newValue == -1) {
+                item.removeEnchantment(enchantment);
+                player.sendMessage(ChatColor.DARK_RED + "Removed Enchantment" + ChatColor.RED + ": " +
+                        ChatColor.WHITE + StringUtils.capitalize(enchantment.getKey().getKey().toLowerCase().replace("_", " ")));
+            } else {
+                item.addUnsafeEnchantment(enchantment, newValue);
+
+                player.sendMessage(ChatColor.BLUE + "Updated Enchantment" + ChatColor.AQUA + ": " +
+                        ChatColor.WHITE + StringUtils.capitalize(enchantment.getKey().getKey().toLowerCase().replace("_", " ")));
+            }
         });
     }
 
