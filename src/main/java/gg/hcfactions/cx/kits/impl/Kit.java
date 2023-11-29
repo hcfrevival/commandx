@@ -17,6 +17,10 @@ public final class Kit {
     @Getter public final List<ItemStack> armor;
 
     public void give(Player player) {
+        give(player, true);
+    }
+
+    public void give(Player player, boolean message) {
         Players.resetHealth(player);
 
         player.getInventory().clear();
@@ -34,6 +38,9 @@ public final class Kit {
         ItemStack[] armorContents = new ItemStack[armor.size()];
         armorContents = armor.toArray(armorContents);
         player.getInventory().setArmorContents(armorContents);
-        player.sendMessage(ChatColor.YELLOW + "You have received the " + ChatColor.BLUE + name + ChatColor.YELLOW + " kit");
+
+        if (message) {
+            player.sendMessage(ChatColor.YELLOW + "You have received the " + ChatColor.BLUE + name + ChatColor.YELLOW + " kit");
+        }
     }
 }
