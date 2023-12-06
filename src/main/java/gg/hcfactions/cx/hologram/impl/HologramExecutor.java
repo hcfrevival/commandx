@@ -15,7 +15,7 @@ public final class HologramExecutor implements IHologramExecutor {
 
     @Override
     public void createHologram(PLocatable location, String initialText, EHologramOrder order) {
-        final Hologram holo = new Hologram(manager.getNextId().getAndIncrement(), Collections.singletonList(initialText), location, order);
+        final Hologram holo = new Hologram(manager.getService(), manager.getNextId().getAndIncrement(), Collections.singletonList(initialText), location, order);
         manager.getHologramRepository().add(holo);
         manager.saveHolograms();
 

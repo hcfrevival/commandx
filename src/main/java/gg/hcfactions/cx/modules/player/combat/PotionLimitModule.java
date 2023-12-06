@@ -1,8 +1,8 @@
 package gg.hcfactions.cx.modules.player.combat;
 
 import com.google.common.collect.Lists;
+import gg.hcfactions.cx.CXService;
 import gg.hcfactions.cx.modules.ICXModule;
-import gg.hcfactions.libs.bukkit.AresPlugin;
 import gg.hcfactions.libs.bukkit.events.impl.PlayerLingeringSplashEvent;
 import gg.hcfactions.libs.bukkit.remap.ERemappedEffect;
 import lombok.Getter;
@@ -29,13 +29,13 @@ import java.util.List;
 import java.util.Objects;
 
 public final class PotionLimitModule implements ICXModule, Listener {
-    @Getter public final AresPlugin plugin;
+    @Getter public final CXService service;
     @Getter public final String key;
     @Getter @Setter public boolean enabled;
     @Getter public final List<PotionLimit> potionLimits;
 
-    public PotionLimitModule(AresPlugin plugin) {
-        this.plugin = plugin;
+    public PotionLimitModule(CXService service) {
+        this.service = service;
         this.key = "combat.potion_limits.";
         this.potionLimits = Lists.newArrayList();
     }
@@ -48,7 +48,7 @@ public final class PotionLimitModule implements ICXModule, Listener {
             return;
         }
 
-        plugin.registerListener(this);
+        getPlugin().registerListener(this);
     }
 
     @Override
@@ -76,7 +76,7 @@ public final class PotionLimitModule implements ICXModule, Listener {
             final boolean canSplash = conf.get(getKey() + "limits." + effectName + ".can_splash") == null || conf.getBoolean(getKey() + "limits." + effectName + "can_splash");
 
             if (type == null) {
-                plugin.getAresLogger().error("bad effect type: " + effectName);
+                getPlugin().getAresLogger().error("bad effect type: " + effectName);
                 continue;
             }
 
@@ -84,7 +84,7 @@ public final class PotionLimitModule implements ICXModule, Listener {
             potionLimits.add(limit);
         }
 
-        plugin.getAresLogger().info("loaded " + potionLimits.size() + " potion limits");
+        getPlugin().getAresLogger().info("loaded " + potionLimits.size() + " potion limits");
     }
 
     /**

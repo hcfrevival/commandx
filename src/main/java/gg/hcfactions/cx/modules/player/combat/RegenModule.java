@@ -1,8 +1,8 @@
 package gg.hcfactions.cx.modules.player.combat;
 
 import com.google.common.collect.Lists;
+import gg.hcfactions.cx.CXService;
 import gg.hcfactions.cx.modules.ICXModule;
-import gg.hcfactions.libs.bukkit.AresPlugin;
 import gg.hcfactions.libs.bukkit.scheduler.Scheduler;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,15 +18,15 @@ import java.util.List;
 import java.util.UUID;
 
 public final class RegenModule implements ICXModule, Listener {
-    @Getter public final AresPlugin plugin;
+    @Getter public final CXService service;
     @Getter public final String key;
     @Getter @Setter public boolean enabled;
 
     private int healRate;
-    private List<UUID> recentlyHealed;
+    private final List<UUID> recentlyHealed;
 
-    public RegenModule(AresPlugin plugin) {
-        this.plugin = plugin;
+    public RegenModule(CXService service) {
+        this.service = service;
         this.key = "combat.regen.";
         this.recentlyHealed = Lists.newArrayList();
     }
@@ -39,7 +39,7 @@ public final class RegenModule implements ICXModule, Listener {
             return;
         }
 
-        plugin.registerListener(this);
+        getPlugin().registerListener(this);
     }
 
     @Override
@@ -87,10 +87,10 @@ public final class RegenModule implements ICXModule, Listener {
         if (player.getHealth() < maxHealth && !recentlyHealed.contains(player.getUniqueId())) {
             player.setHealth(Math.min(player.getHealth() + 1.0, maxHealth));
             recentlyHealed.add(player.getUniqueId());
-            new Scheduler(plugin).sync(() -> recentlyHealed.remove(player.getUniqueId())).delay(healRate * 20L).run();
+            new Scheduler(getPlugin()).sync(() -> recentlyHealed.remove(player.getUniqueId())).delay(healRate * 20L).run();
         }
 
-        new Scheduler(plugin).sync(() -> {
+        new Scheduler(getPlugin()).sync(() -> {
             player.setExhaustion(preExhaustion + 0.1F);
             player.setSaturation(preSaturation - 0.1F);
         }).delay(1L).run();

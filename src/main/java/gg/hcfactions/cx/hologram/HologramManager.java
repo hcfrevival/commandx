@@ -13,8 +13,11 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public final class HologramManager {
     @Getter public CXService service;
@@ -26,6 +29,14 @@ public final class HologramManager {
         this.service = service;
         this.executor = new HologramExecutor(this);
         this.hologramRepository = Sets.newHashSet();
+    }
+
+    public Optional<Hologram> getHologram(Predicate<Hologram> pred) {
+        return hologramRepository.stream().filter(pred).findFirst();
+    }
+
+    public List<Hologram> getHolograms(Predicate<Hologram> pred) {
+        return hologramRepository.stream().filter(pred).collect(Collectors.toList());
     }
 
     /**
@@ -50,7 +61,7 @@ public final class HologramManager {
 
             hologramLines.forEach(line -> formatted.add(ChatColor.translateAlternateColorCodes('&', line)));
 
-            final Hologram hologram = new Hologram(hologramId, formatted, location, order);
+            final Hologram hologram = new Hologram(service, hologramId, formatted, location, order);
             hologramRepository.add(hologram);
         }
 

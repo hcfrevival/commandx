@@ -1,5 +1,6 @@
 package gg.hcfactions.cx.modules.reboot;
 
+import gg.hcfactions.cx.CXService;
 import gg.hcfactions.cx.modules.ICXModule;
 import gg.hcfactions.cx.modules.reboot.event.ServerRestartEvent;
 import gg.hcfactions.libs.base.consumer.Promise;
@@ -19,7 +20,7 @@ import org.spigotmc.RestartCommand;
 public final class RebootModule implements ICXModule {
     public static final String REBOOT_PREFIX = ChatColor.DARK_RED + "[" + ChatColor.RED + "Reboot" + ChatColor.DARK_RED + "]" + ChatColor.RED + " ";
 
-    @Getter public final AresPlugin plugin;
+    @Getter public final CXService service;
     @Getter public final String key;
     @Getter @Setter public boolean enabled;
     @Getter @Setter public boolean rebootInProgress;
@@ -27,8 +28,8 @@ public final class RebootModule implements ICXModule {
     @Getter @Setter public long rebootTime;
     @Getter @Setter public BukkitTask rebootTask;
 
-    public RebootModule(AresPlugin plugin) {
-        this.plugin = plugin;
+    public RebootModule(CXService service) {
+        this.service = service;
         this.key = "reboot.";
         this.enabled = false;
     }
@@ -66,7 +67,7 @@ public final class RebootModule implements ICXModule {
             rebootTask.cancel();
         }
 
-        rebootTask = new Scheduler(plugin).async(() -> {
+        rebootTask = new Scheduler(getPlugin()).async(() -> {
             if (!isRebootInProgress() && Time.now() >= rebootCommenceTime) {
                 startReboot(60);
             }
@@ -79,7 +80,7 @@ public final class RebootModule implements ICXModule {
                 Bukkit.getPluginManager().callEvent(restartEvent);
 
                 if (!restartEvent.isCancelled()) {
-                    new Scheduler(plugin).sync(RestartCommand::restart).run();
+                    new Scheduler(getPlugin()).sync(RestartCommand::restart).run();
                 }
             }
         }).repeat(20L, 20L).run();

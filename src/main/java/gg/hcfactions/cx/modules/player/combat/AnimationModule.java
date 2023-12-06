@@ -9,8 +9,8 @@ import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.comphenix.protocol.wrappers.WrappedEnumEntityUseAction;
 import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
+import gg.hcfactions.cx.CXService;
 import gg.hcfactions.cx.modules.ICXModule;
-import gg.hcfactions.libs.bukkit.AresPlugin;
 import gg.hcfactions.libs.bukkit.events.impl.PlayerDamagePlayerEvent;
 import gg.hcfactions.libs.bukkit.scheduler.Scheduler;
 import gg.hcfactions.libs.bukkit.services.impl.account.AccountService;
@@ -40,7 +40,7 @@ import java.util.Set;
 import java.util.UUID;
 
 public final class AnimationModule implements ICXModule, Listener {
-    @Getter public final AresPlugin plugin;
+    @Getter public final CXService service;
     @Getter public final String key;
     @Getter @Setter public boolean enabled;
     @Getter public Set<UUID> debugging;
@@ -55,8 +55,8 @@ public final class AnimationModule implements ICXModule, Listener {
     private final Set<UUID> recentlyTakenProjectileDamage;
     private final Set<UUID> recentlyTakenTickDamage;
 
-    public AnimationModule(AresPlugin plugin) {
-        this.plugin = plugin;
+    public AnimationModule(CXService service) {
+        this.service = service;
         this.key = "combat.animation.";
         this.enabled = false;
         this.accountService = null;
@@ -68,27 +68,27 @@ public final class AnimationModule implements ICXModule, Listener {
 
     @Override
     public void onEnable() {
-        if (plugin.getRegisteredProtocolManager() == null) {
-            plugin.getAresLogger().error("failed to register animation module: protocollib not registered");
+        if (getPlugin().getRegisteredProtocolManager() == null) {
+            getPlugin().getAresLogger().error("failed to register animation module: protocollib not registered");
             return;
         }
 
         loadConfig();
 
         if (!enabled) {
-            plugin.getAresLogger().error("animation module disabled");
+            getPlugin().getAresLogger().error("animation module disabled");
             return;
         }
 
         implPacketListener();
         implQueueTask();
 
-        accountService = (AccountService)plugin.getService(AccountService.class);
+        accountService = (AccountService)getPlugin().getService(AccountService.class);
         if (accountService == null) {
-            plugin.getAresLogger().error("failed to obtain Account Service, critical strike audio queue will not be played");
+            getPlugin().getAresLogger().error("failed to obtain Account Service, critical strike audio queue will not be played");
         }
 
-        plugin.registerListener(this);
+        getPlugin().registerListener(this);
     }
 
     @Override
@@ -141,7 +141,7 @@ public final class AnimationModule implements ICXModule, Listener {
             attackQueueTask = null;
         }
 
-        attackQueueTask = new Scheduler(plugin).sync(() -> {
+        attackQueueTask = new Scheduler(getPlugin()).sync(() -> {
             while (!queuedAttacks.isEmpty()) {
                 final QueuedAttack attack = queuedAttacks.remove();
                 attack.getAttacked().damage(attack.getDamage(), attack.getAttacker());
@@ -153,7 +153,7 @@ public final class AnimationModule implements ICXModule, Listener {
     }
 
     private void implPacketListener() {
-        plugin.getRegisteredProtocolManager().addPacketListener(new PacketAdapter(plugin, ListenerPriority.LOWEST, PacketType.Play.Client.USE_ENTITY) {
+        getPlugin().getRegisteredProtocolManager().addPacketListener(new PacketAdapter(getPlugin(), ListenerPriority.LOWEST, PacketType.Play.Client.USE_ENTITY) {
             @Override
             public void onPacketReceiving(PacketEvent event) {
                 final PacketContainer packet = event.getPacket();
@@ -373,8 +373,8 @@ public final class AnimationModule implements ICXModule, Listener {
         player.setNoDamageTicks(0);
         recentlyTakenProjectileDamage.add(uniqueId);
 
-        new Scheduler(plugin).sync(() -> recentlyTakenProjectileDamage.remove(uniqueId)).delay(20L).run();
-        new Scheduler(plugin).sync(() -> player.setNoDamageTicks(preDamageTicks - 1)).run();
+        new Scheduler(getPlugin()).sync(() -> recentlyTakenProjectileDamage.remove(uniqueId)).delay(20L).run();
+        new Scheduler(getPlugin()).sync(() -> player.setNoDamageTicks(preDamageTicks - 1)).run();
     }
 
     @EventHandler (priority = EventPriority.MONITOR)
@@ -417,10 +417,10 @@ public final class AnimationModule implements ICXModule, Listener {
             }
 
             recentlyTakenTickDamage.add(uniqueId);
-            new Scheduler(plugin).sync(() -> recentlyTakenTickDamage.remove(uniqueId)).delay(noDamageTicks).run();
+            new Scheduler(getPlugin()).sync(() -> recentlyTakenTickDamage.remove(uniqueId)).delay(noDamageTicks).run();
         }
 
-        new Scheduler(plugin).sync(() -> {
+        new Scheduler(getPlugin()).sync(() -> {
             ((LivingEntity)event.getEntity()).setNoDamageTicks(ticks);
 
             if (debugging.contains(player.getUniqueId())) {

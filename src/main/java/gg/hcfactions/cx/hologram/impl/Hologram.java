@@ -1,6 +1,7 @@
 package gg.hcfactions.cx.hologram.impl;
 
 import com.google.common.collect.Lists;
+import gg.hcfactions.cx.CXService;
 import gg.hcfactions.cx.hologram.EHologramOrder;
 import gg.hcfactions.libs.bukkit.location.impl.PLocatable;
 import lombok.Getter;
@@ -8,17 +9,20 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.List;
 import java.util.Objects;
 
 public final class Hologram {
+    @Getter public CXService service;
     @Getter public int id;
     @Getter public List<String> text;
     @Getter public PLocatable origin;
     @Getter public EHologramOrder order;
 
-    public Hologram(int id, List<String> text, PLocatable origin, EHologramOrder order) {
+    public Hologram(CXService service, int id, List<String> text, PLocatable origin, EHologramOrder order) {
+        this.service = service;
         this.id = id;
         this.text = Lists.newArrayList();
         this.origin = origin;
@@ -47,6 +51,7 @@ public final class Hologram {
             as.setCustomNameVisible(true);
             as.setGravity(false);
             as.setCollidable(false);
+            as.getPersistentDataContainer().set(service.getNamespacedKey(), PersistentDataType.STRING, "hologram");
 
             offset += 0.3;
         }
@@ -83,6 +88,7 @@ public final class Hologram {
         as.setGravity(false);
         as.setInvisible(true);
         as.setCollidable(false);
+        as.getPersistentDataContainer().set(service.getNamespacedKey(), PersistentDataType.STRING, "hologram");
 
         text.add(ChatColor.translateAlternateColorCodes('&', newLine));
     }

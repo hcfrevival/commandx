@@ -2,12 +2,12 @@ package gg.hcfactions.cx.modules.world;
 
 import com.google.common.collect.Sets;
 import gg.hcfactions.cx.CXPermissions;
+import gg.hcfactions.cx.CXService;
 import gg.hcfactions.cx.event.ShulkerPlaceEvent;
 import gg.hcfactions.cx.hologram.EHologramOrder;
 import gg.hcfactions.cx.hologram.impl.Hologram;
 import gg.hcfactions.cx.modules.ICXModule;
 import gg.hcfactions.libs.base.util.Time;
-import gg.hcfactions.libs.bukkit.AresPlugin;
 import gg.hcfactions.libs.bukkit.location.impl.PLocatable;
 import gg.hcfactions.libs.bukkit.scheduler.Scheduler;
 import lombok.Getter;
@@ -29,19 +29,18 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
 public final class ShulkerModule implements ICXModule, Listener {
-    @Getter public final AresPlugin plugin;
+    @Getter public final CXService service;
     @Getter public final String key;
     @Getter @Setter public boolean enabled;
 
     private final Set<LockedShulkerBox> lockedShulkerRepository;
 
-    public ShulkerModule(AresPlugin plugin) {
-        this.plugin = plugin;
+    public ShulkerModule(CXService service) {
+        this.service = service;
         this.key = "world.shulkers.";
         this.lockedShulkerRepository = Sets.newConcurrentHashSet();
     }
@@ -54,7 +53,7 @@ public final class ShulkerModule implements ICXModule, Listener {
             return;
         }
 
-        plugin.registerListener(this);
+        service.getPlugin().registerListener(this);
     }
 
     @Override
@@ -188,6 +187,7 @@ public final class ShulkerModule implements ICXModule, Listener {
             this.block = block;
 
             this.hologram = new Hologram(
+                    service,
                     -1,
                     List.of(ChatColor.RED + "Locked", ChatColor.YELLOW + Time.convertToRemaining(30 * 1000L)),
                     new PLocatable(block.getWorld().getName(), block.getX() + 0.5, block.getY() - 0.5, block.getZ() + 0.5, 0.0F, 0.0F),
@@ -201,6 +201,7 @@ public final class ShulkerModule implements ICXModule, Listener {
             this.block = block;
 
             this.hologram = new Hologram(
+                    service,
                     -1,
                     List.of(ChatColor.RED + "Locked", ChatColor.YELLOW + Time.convertToRemaining(lockSeconds*1000L)),
                     new PLocatable(block.getWorld().getName(), block.getX() + 0.5, block.getY() - 0.5, block.getZ() + 0.5, 0.0F, 0.0F),
@@ -216,7 +217,7 @@ public final class ShulkerModule implements ICXModule, Listener {
                 tickingTask = null;
             }
 
-            tickingTask = new Scheduler(plugin).sync(() -> {
+            tickingTask = new Scheduler(service.getPlugin()).sync(() -> {
                 if (isExpired()) {
                     unlock();
                     return;

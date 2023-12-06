@@ -4,10 +4,10 @@ import com.destroystokyo.paper.event.entity.PreCreatureSpawnEvent;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import gg.hcfactions.cx.CXPermissions;
+import gg.hcfactions.cx.CXService;
 import gg.hcfactions.cx.event.PortalPlatformGenerateEvent;
 import gg.hcfactions.cx.modules.ICXModule;
 import gg.hcfactions.libs.base.util.Time;
-import gg.hcfactions.libs.bukkit.AresPlugin;
 import gg.hcfactions.libs.bukkit.scheduler.Scheduler;
 import lombok.Getter;
 import lombok.Setter;
@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.Set;
 
 public final class WorldModule implements ICXModule, Listener {
-    @Getter public final AresPlugin plugin;
+    @Getter public final CXService service;
     @Getter public final String key;
     @Getter @Setter public boolean enabled;
 
@@ -55,11 +55,11 @@ public final class WorldModule implements ICXModule, Listener {
     private boolean allowPearlingThroughTraps;
     private boolean generateNetherPortalPlatforms;
     private long nextWitherSpawn;
-    private Set<EntityType> disabledEntities;
-    private Set<EntityType> disabledSpawnerBlockBreaks;
+    private final Set<EntityType> disabledEntities;
+    private final Set<EntityType> disabledSpawnerBlockBreaks;
 
-    public WorldModule(AresPlugin plugin) {
-        this.plugin = plugin;
+    public WorldModule(CXService service) {
+        this.service = service;
         this.key = "world.general.";
         this.nextWitherSpawn = Time.now();
         this.disabledEntities = Sets.newHashSet();
@@ -74,7 +74,7 @@ public final class WorldModule implements ICXModule, Listener {
             return;
         }
 
-        plugin.registerListener(this);
+        getPlugin().registerListener(this);
     }
 
     @Override
@@ -116,7 +116,7 @@ public final class WorldModule implements ICXModule, Listener {
                 final EntityType type = EntityType.valueOf(entityName);
                 disabledEntities.add(type);
             } catch (IllegalArgumentException e) {
-                plugin.getAresLogger().error("bad entity type: " + entityName);
+                getPlugin().getAresLogger().error("bad entity type: " + entityName);
             }
         }
 
@@ -125,7 +125,7 @@ public final class WorldModule implements ICXModule, Listener {
                 final EntityType type = EntityType.valueOf(entityName);
                 disabledSpawnerBlockBreaks.add(type);
             } catch (IllegalArgumentException e) {
-                plugin.getAresLogger().error("bad entity type: " + entityName);
+                getPlugin().getAresLogger().error("bad entity type: " + entityName);
             }
         }
     }
@@ -388,7 +388,7 @@ public final class WorldModule implements ICXModule, Listener {
             return;
         }
 
-        new Scheduler(plugin).sync(() ->
+        new Scheduler(getPlugin()).sync(() ->
                 Bukkit.getOnlinePlayers().forEach(onlinePlayer -> onlinePlayer.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(" "))))
                 .delay(1L)
                 .run();
@@ -416,7 +416,7 @@ public final class WorldModule implements ICXModule, Listener {
             return;
         }
 
-        new Scheduler(plugin).sync(() -> {
+        new Scheduler(getPlugin()).sync(() -> {
             final Location playerLoc = player.getLocation();
 
             if (playerLoc.getWorld() == null) {

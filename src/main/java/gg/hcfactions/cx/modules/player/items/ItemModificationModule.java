@@ -1,8 +1,8 @@
 package gg.hcfactions.cx.modules.player.items;
 
 import gg.hcfactions.cx.CXPermissions;
+import gg.hcfactions.cx.CXService;
 import gg.hcfactions.cx.modules.ICXModule;
-import gg.hcfactions.libs.bukkit.AresPlugin;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.ChatColor;
@@ -22,7 +22,7 @@ import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 
 public class ItemModificationModule implements ICXModule, Listener {
-    @Getter public final AresPlugin plugin;
+    @Getter public final CXService service;
     @Getter public final String key;
     @Getter @Setter public boolean enabled;
 
@@ -37,8 +37,8 @@ public class ItemModificationModule implements ICXModule, Listener {
     private boolean milkExcludesInfiniteEffects;
     private boolean disableFireworkCrossbows;
 
-    public ItemModificationModule(AresPlugin plugin) {
-        this.plugin = plugin;
+    public ItemModificationModule(CXService service) {
+        this.service = service;
         this.key = "items.modifications.";
         this.enabled = false;
     }
@@ -51,7 +51,7 @@ public class ItemModificationModule implements ICXModule, Listener {
             return;
         }
 
-        plugin.registerListener(this);
+        getPlugin().registerListener(this);
     }
 
     @Override

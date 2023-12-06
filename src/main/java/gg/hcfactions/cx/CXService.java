@@ -5,7 +5,7 @@ import gg.hcfactions.cx.broadcasts.BroadcastManager;
 import gg.hcfactions.cx.command.*;
 import gg.hcfactions.cx.hologram.HologramManager;
 import gg.hcfactions.cx.kits.KitManager;
-import gg.hcfactions.cx.listener.NPCListener;
+import gg.hcfactions.cx.listener.HologramListener;
 import gg.hcfactions.cx.listener.SignListener;
 import gg.hcfactions.cx.listener.WarpGatewayListener;
 import gg.hcfactions.cx.message.MessageManager;
@@ -18,7 +18,6 @@ import gg.hcfactions.cx.modules.player.items.ItemVelocityModule;
 import gg.hcfactions.cx.modules.player.vanish.VanishManager;
 import gg.hcfactions.cx.modules.reboot.RebootModule;
 import gg.hcfactions.cx.modules.world.*;
-import gg.hcfactions.cx.npc.NPCManager;
 import gg.hcfactions.cx.rollback.RollbackManager;
 import gg.hcfactions.cx.warp.WarpManager;
 import gg.hcfactions.libs.bukkit.AresPlugin;
@@ -27,11 +26,13 @@ import gg.hcfactions.libs.bukkit.scheduler.Scheduler;
 import gg.hcfactions.libs.bukkit.services.IAresService;
 import lombok.Getter;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 
 import java.util.List;
 
 public final class CXService implements IAresService {
     @Getter public final AresPlugin plugin;
+    @Getter public final NamespacedKey namespacedKey;
     @Getter public final String name = "Command X";
 
     @Getter public MessageManager messageManager;
@@ -41,7 +42,6 @@ public final class CXService implements IAresService {
     @Getter public BroadcastManager broadcastManager;
     @Getter public HologramManager hologramManager;
     @Getter public RollbackManager rollbackManager;
-    @Getter public NPCManager npcManager;
 
     @Getter public RebootModule rebootModule;
     @Getter public AnimationModule animationModule;
@@ -65,6 +65,7 @@ public final class CXService implements IAresService {
 
     public CXService(AresPlugin plugin) {
         this.plugin = plugin;
+        this.namespacedKey = new NamespacedKey(plugin, "cx");
     }
 
     @Override
@@ -78,11 +79,10 @@ public final class CXService implements IAresService {
         plugin.registerCommand(new KitCommand(this));
         plugin.registerCommand(new HologramCommand(this));
         plugin.registerCommand(new RollbackCommand(this));
-        plugin.registerCommand(new NPCCommand(this));
 
         plugin.registerListener(new SignListener(this));
         plugin.registerListener(new WarpGatewayListener(this));
-        plugin.registerListener(new NPCListener(this));
+        plugin.registerListener(new HologramListener(this));
 
         messageManager = new MessageManager(this);
         vanishManager = new VanishManager(this);
@@ -102,10 +102,6 @@ public final class CXService implements IAresService {
         hologramManager = new HologramManager(this);
         hologramManager.loadHolograms();
         new Scheduler(plugin).sync(() -> hologramManager.spawnHolograms()).delay(20L).run();
-
-        npcManager = new NPCManager(this);
-        npcManager.loadNpcs();
-        npcManager.spawnNpcs();
 
         // command completions
         plugin.getCommandManager().getCommandCompletions().registerAsyncCompletion("warps", ctx -> {
@@ -140,35 +136,25 @@ public final class CXService implements IAresService {
             return names;
         });
 
-        plugin.getCommandManager().getCommandCompletions().registerAsyncCompletion("npcs", ctx -> {
-            final List<String> names = Lists.newArrayList();
-
-            if (npcManager != null) {
-                npcManager.getNpcRepository().forEach(npc -> names.add(npc.getProfileUsername()));
-            }
-
-            return names;
-        });
-
-        animationModule = new AnimationModule(plugin);
-        knockbackModule = new KnockbackModule(plugin);
-        itemVelocityModule = new ItemVelocityModule(plugin);
-        worldModule = new WorldModule(plugin);
-        chatModule = new ChatModule(plugin);
-        potionLimitModule = new PotionLimitModule(plugin);
-        enchantLimitModule = new EnchantLimitModule(plugin);
-        itemModificationModule = new ItemModificationModule(plugin);
-        mobstackModule = new MobstackModule(plugin);
-        regenModule = new RegenModule(plugin);
-        tablistModule = new TablistModule(plugin);
-        rebootModule = new RebootModule(plugin);
-        exploitPatchModule = new ExploitPatchModule(plugin);
-        expBonusModule = new EXPBonusModule(plugin);
-        durabilityModule = new DurabilityModule(plugin);
-        elytraBalanceModule = new ElytraBalanceModule(plugin);
-        shulkerModule = new ShulkerModule(plugin);
-        entityDropModule = new EntityDropModule(plugin);
-        potionPrecisionModule = new PotionPrecisionModule(plugin);
+        animationModule = new AnimationModule(this);
+        knockbackModule = new KnockbackModule(this);
+        itemVelocityModule = new ItemVelocityModule(this);
+        worldModule = new WorldModule(this);
+        chatModule = new ChatModule(this);
+        potionLimitModule = new PotionLimitModule(this);
+        enchantLimitModule = new EnchantLimitModule(this);
+        itemModificationModule = new ItemModificationModule(this);
+        mobstackModule = new MobstackModule(this);
+        regenModule = new RegenModule(this);
+        tablistModule = new TablistModule(this);
+        rebootModule = new RebootModule(this);
+        exploitPatchModule = new ExploitPatchModule(this);
+        expBonusModule = new EXPBonusModule(this);
+        durabilityModule = new DurabilityModule(this);
+        elytraBalanceModule = new ElytraBalanceModule(this);
+        shulkerModule = new ShulkerModule(this);
+        entityDropModule = new EntityDropModule(this);
+        potionPrecisionModule = new PotionPrecisionModule(this);
         animationModule.onEnable();
         knockbackModule.onEnable();
         itemVelocityModule.onEnable();
@@ -213,7 +199,6 @@ public final class CXService implements IAresService {
         potionPrecisionModule.onDisable();
 
         hologramManager.despawnHolograms();
-        npcManager.unloadNpcs();
     }
 
     @Override
@@ -221,10 +206,8 @@ public final class CXService implements IAresService {
         warpManager.loadWarps();
         warpManager.loadGateways();
         kitManager.loadKits();
-        npcManager.loadNpcs();
         broadcastManager.loadBroadcasts();
         hologramManager.reloadHolograms();
-        npcManager.unloadNpcs();
 
         animationModule.onReload();
         knockbackModule.onReload();

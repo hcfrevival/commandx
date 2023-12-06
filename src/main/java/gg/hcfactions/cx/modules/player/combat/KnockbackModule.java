@@ -2,6 +2,7 @@ package gg.hcfactions.cx.modules.player.combat;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import gg.hcfactions.cx.CXService;
 import gg.hcfactions.cx.command.KnockbackCommand;
 import gg.hcfactions.cx.event.PlayerSprintResetEvent;
 import gg.hcfactions.cx.modules.ICXModule;
@@ -31,7 +32,7 @@ import java.util.Set;
 import java.util.UUID;
 
 public final class KnockbackModule implements ICXModule, Listener {
-    @Getter public final AresPlugin plugin;
+    @Getter public final CXService service;
     @Getter public final String key;
     @Getter @Setter public boolean enabled;
 
@@ -47,8 +48,8 @@ public final class KnockbackModule implements ICXModule, Listener {
     private final Map<UUID, Vector> velocityCache;
     private final Set<UUID> recentlySprinted;
 
-    public KnockbackModule(AresPlugin plugin) {
-        this.plugin = plugin;
+    public KnockbackModule(CXService service) {
+        this.service = service;
         this.key = "combat.knockback.";
         this.velocityCache = Maps.newHashMap();
         this.recentlySprinted = Sets.newConcurrentHashSet();
@@ -62,8 +63,8 @@ public final class KnockbackModule implements ICXModule, Listener {
             return;
         }
 
-        plugin.registerCommand(new KnockbackCommand(this));
-        plugin.registerListener(this);
+        getPlugin().registerCommand(new KnockbackCommand(this));
+        getPlugin().registerListener(this);
     }
 
     @Override
@@ -101,7 +102,7 @@ public final class KnockbackModule implements ICXModule, Listener {
         conf.set(getKey() + "values.vertical_limit", getKnockbackVerticalLimit());
         conf.set(getKey() + "values.sprint_reset_modifier", getSprintResetModifier());
         conf.set(getKey() + "values.sprint_modifier", getSprintModifier());
-        plugin.saveConfiguration("commandx", conf);
+        getPlugin().saveConfiguration("commandx", conf);
     }
 
     /**

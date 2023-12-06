@@ -1,8 +1,8 @@
 package gg.hcfactions.cx.modules.player.combat;
 
 import com.google.common.collect.Maps;
+import gg.hcfactions.cx.CXService;
 import gg.hcfactions.cx.modules.ICXModule;
-import gg.hcfactions.libs.bukkit.AresPlugin;
 import gg.hcfactions.libs.bukkit.scheduler.Scheduler;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public final class ElytraBalanceModule implements ICXModule, Listener {
-    @Getter public final AresPlugin plugin;
+    @Getter CXService service;
     @Getter public final String key;
     @Getter @Setter public boolean enabled;
 
@@ -33,8 +33,8 @@ public final class ElytraBalanceModule implements ICXModule, Listener {
     private int bhopResetInterval;
     private Map<UUID, Integer> bhopVL;
 
-    public ElytraBalanceModule(AresPlugin plugin) {
-        this.plugin = plugin;
+    public ElytraBalanceModule(CXService service) {
+        this.service = service;
         this.key = "combat.elytra.";
         this.bhopVL = Maps.newConcurrentMap();
     }
@@ -42,9 +42,9 @@ public final class ElytraBalanceModule implements ICXModule, Listener {
     @Override
     public void onEnable() {
         loadConfig();
-        plugin.registerListener(this);
+        getPlugin().registerListener(this);
 
-        bhopResetTask = new Scheduler(plugin).async(() -> bhopVL.clear()).repeat(0L, bhopResetInterval * 20L).run();
+        bhopResetTask = new Scheduler(getPlugin()).async(() -> bhopVL.clear()).repeat(0L, bhopResetInterval * 20L).run();
 
         this.enabled = true;
     }

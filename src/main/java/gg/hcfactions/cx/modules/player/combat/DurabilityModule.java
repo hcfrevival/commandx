@@ -1,7 +1,7 @@
 package gg.hcfactions.cx.modules.player.combat;
 
+import gg.hcfactions.cx.CXService;
 import gg.hcfactions.cx.modules.ICXModule;
-import gg.hcfactions.libs.bukkit.AresPlugin;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Material;
@@ -13,14 +13,14 @@ import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.inventory.ItemStack;
 
 public final class DurabilityModule implements ICXModule, Listener {
-    @Getter public final AresPlugin plugin;
+    @Getter public final CXService service;
     @Getter public final String key;
     @Getter @Setter public boolean enabled;
 
     private int reduction;
 
-    public DurabilityModule(AresPlugin plugin) {
-        this.plugin = plugin;
+    public DurabilityModule(CXService service) {
+        this.service = service;
         this.key = "combat.durability.";
     }
 
@@ -32,7 +32,7 @@ public final class DurabilityModule implements ICXModule, Listener {
             return;
         }
 
-        plugin.registerListener(this);
+        getPlugin().registerListener(this);
     }
 
     @Override

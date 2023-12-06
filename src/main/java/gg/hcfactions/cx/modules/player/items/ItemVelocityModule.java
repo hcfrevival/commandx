@@ -1,7 +1,7 @@
 package gg.hcfactions.cx.modules.player.items;
 
+import gg.hcfactions.cx.CXService;
 import gg.hcfactions.cx.modules.ICXModule;
-import gg.hcfactions.libs.bukkit.AresPlugin;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -14,15 +14,15 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 
 public final class ItemVelocityModule implements ICXModule, Listener {
-    @Getter public final AresPlugin plugin;
+    @Getter public final CXService service;
     @Getter public final String key;
     @Getter @Setter public boolean enabled;
 
     private double pearlVelocity;
     private double potionVelocity;
 
-    public ItemVelocityModule(AresPlugin plugin) {
-        this.plugin = plugin;
+    public ItemVelocityModule(CXService service) {
+        this.service = service;
         this.key = "items.velocity.";
     }
 
@@ -34,7 +34,7 @@ public final class ItemVelocityModule implements ICXModule, Listener {
         potionVelocity = conf.getDouble(getKey() + "potions");
 
         if (isEnabled()) {
-            plugin.registerListener(this);
+            getPlugin().registerListener(this);
         }
     }
 

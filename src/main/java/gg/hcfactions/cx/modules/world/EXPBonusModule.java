@@ -1,7 +1,7 @@
 package gg.hcfactions.cx.modules.world;
 
+import gg.hcfactions.cx.CXService;
 import gg.hcfactions.cx.modules.ICXModule;
-import gg.hcfactions.libs.bukkit.AresPlugin;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -15,15 +15,15 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.inventory.ItemStack;
 
 public final class EXPBonusModule implements ICXModule, Listener {
-    @Getter public final AresPlugin plugin;
+    @Getter public final CXService service;
     @Getter public final String key;
     @Getter @Setter public boolean enabled;
 
     private double fortuneModifier;
     private double lootingModifier;
 
-    public EXPBonusModule(AresPlugin plugin) {
-        this.plugin = plugin;
+    public EXPBonusModule(CXService service) {
+        this.service = service;
         this.key = "world.exp_bonus.";
     }
 
@@ -32,7 +32,7 @@ public final class EXPBonusModule implements ICXModule, Listener {
         loadConfig();
 
         if (isEnabled()) {
-            plugin.registerListener(this);
+            getPlugin().registerListener(this);
         }
     }
 

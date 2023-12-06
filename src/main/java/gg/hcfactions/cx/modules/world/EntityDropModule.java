@@ -1,7 +1,7 @@
 package gg.hcfactions.cx.modules.world;
 
+import gg.hcfactions.cx.CXService;
 import gg.hcfactions.cx.modules.ICXModule;
-import gg.hcfactions.libs.bukkit.AresPlugin;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -15,7 +15,7 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import java.util.Random;
 
 public final class EntityDropModule implements ICXModule, Listener {
-    @Getter public final AresPlugin plugin;
+    @Getter public final CXService service;
     @Getter public final String key;
     @Getter @Setter public boolean enabled;
 
@@ -24,8 +24,8 @@ public final class EntityDropModule implements ICXModule, Listener {
     private boolean totemDropChanceEnabled;
     private float totemDropChance;
 
-    public EntityDropModule(AresPlugin plugin) {
-        this.plugin = plugin;
+    public EntityDropModule(CXService service) {
+        this.service = service;
         this.key = "world.entitydrops.";
         this.random = new Random();
     }
@@ -33,18 +33,14 @@ public final class EntityDropModule implements ICXModule, Listener {
     @Override
     public void onEnable() {
         loadConfig();
-
-        plugin.registerListener(this);
-
+        getPlugin().registerListener(this);
         setEnabled(true);
     }
 
     @Override
     public void onDisable() {
         loadConfig();
-
         EntityDeathEvent.getHandlerList().unregister(this);
-
         setEnabled(false);
     }
 

@@ -1,8 +1,8 @@
 package gg.hcfactions.cx.modules.display;
 
 import com.google.common.base.Joiner;
+import gg.hcfactions.cx.CXService;
 import gg.hcfactions.cx.modules.ICXModule;
-import gg.hcfactions.libs.bukkit.AresPlugin;
 import gg.hcfactions.libs.bukkit.scheduler.Scheduler;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,15 +16,15 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import java.util.List;
 
 public final class TablistModule implements ICXModule, Listener {
-    @Getter public final AresPlugin plugin;
+    @Getter public final CXService service;
     @Getter public final String key;
     @Getter @Setter public boolean enabled;
 
     private String playerListHeader;
     private String playerListFooter;
 
-    public TablistModule(AresPlugin plugin) {
-        this.plugin = plugin;
+    public TablistModule(CXService service) {
+        this.service = service;
         this.key = "display.tablist.";
     }
 
@@ -36,7 +36,7 @@ public final class TablistModule implements ICXModule, Listener {
             return;
         }
 
-        plugin.registerListener(this);
+        getPlugin().registerListener(this);
     }
 
     @Override
@@ -67,7 +67,7 @@ public final class TablistModule implements ICXModule, Listener {
 
         final Player player = event.getPlayer();
 
-        new Scheduler(plugin).sync(() -> {
+        new Scheduler(getPlugin()).sync(() -> {
             player.setPlayerListHeader(playerListHeader);
             player.setPlayerListFooter(playerListFooter);
         }).delay(10L).run();

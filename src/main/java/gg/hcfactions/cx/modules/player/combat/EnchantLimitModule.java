@@ -2,9 +2,9 @@ package gg.hcfactions.cx.modules.player.combat;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import gg.hcfactions.cx.CXService;
 import gg.hcfactions.cx.event.EnchantLimitApplyEvent;
 import gg.hcfactions.cx.modules.ICXModule;
-import gg.hcfactions.libs.bukkit.AresPlugin;
 import gg.hcfactions.libs.bukkit.remap.ERemappedEnchantment;
 import lombok.Getter;
 import lombok.Setter;
@@ -26,15 +26,15 @@ import org.bukkit.inventory.ItemStack;
 import java.util.*;
 
 public final class EnchantLimitModule implements ICXModule, Listener {
-    @Getter public final AresPlugin plugin;
+    @Getter public final CXService service;
     @Getter public final String key;
     @Getter @Setter public boolean enabled;
     @Getter public final Map<Enchantment, Integer> enchantLimits;
 
     private final Random random;
 
-    public EnchantLimitModule(AresPlugin plugin) {
-        this.plugin = plugin;
+    public EnchantLimitModule(CXService service) {
+        this.service = service;
         this.random = new Random();
         this.key = "combat.enchant_limits.";
         this.enchantLimits = Maps.newHashMap();
@@ -48,7 +48,7 @@ public final class EnchantLimitModule implements ICXModule, Listener {
             return;
         }
 
-        plugin.registerListener(this);
+        getPlugin().registerListener(this);
     }
 
     @Override
@@ -73,14 +73,14 @@ public final class EnchantLimitModule implements ICXModule, Listener {
             final int maxLevel = conf.getInt(getKey() + "limits." + enchantmentName);
 
             if (enchantment == null) {
-                plugin.getAresLogger().error("bad enchantment name: " + enchantmentName);
+                getPlugin().getAresLogger().error("bad enchantment name: " + enchantmentName);
                 continue;
             }
 
             enchantLimits.put(enchantment, maxLevel);
         }
 
-        plugin.getAresLogger().info("loaded " + enchantLimits.size() + " enchantment limits");
+        getPlugin().getAresLogger().info("loaded " + enchantLimits.size() + " enchantment limits");
     }
 
     /**

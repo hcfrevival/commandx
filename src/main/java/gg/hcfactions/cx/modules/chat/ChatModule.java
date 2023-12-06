@@ -2,9 +2,9 @@ package gg.hcfactions.cx.modules.chat;
 
 import com.google.common.collect.Maps;
 import gg.hcfactions.cx.CXPermissions;
+import gg.hcfactions.cx.CXService;
 import gg.hcfactions.cx.modules.ICXModule;
 import gg.hcfactions.libs.base.util.Time;
-import gg.hcfactions.libs.bukkit.AresPlugin;
 import gg.hcfactions.libs.bukkit.events.impl.ProcessedChatEvent;
 import gg.hcfactions.libs.bukkit.scheduler.Scheduler;
 import lombok.Getter;
@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public final class ChatModule implements ICXModule, Listener {
-    @Getter public final AresPlugin plugin;
+    @Getter public final CXService service;
     @Getter public final String key;
     @Getter @Setter public boolean enabled;
 
@@ -35,8 +35,8 @@ public final class ChatModule implements ICXModule, Listener {
     private Map<UUID, Long> recentChatters;
     private List<String> whitelistedLinks;
 
-    public ChatModule(AresPlugin plugin) {
-        this.plugin = plugin;
+    public ChatModule(CXService service) {
+        this.service = service;
         this.key = "chat.";
         this.enabled = false;
     }
@@ -49,7 +49,7 @@ public final class ChatModule implements ICXModule, Listener {
             return;
         }
 
-        plugin.registerListener(this);
+        getPlugin().registerListener(this);
     }
 
     @Override
@@ -157,7 +157,7 @@ public final class ChatModule implements ICXModule, Listener {
         final long nextAllowedMessage = (Time.now() + (chatDelay * 1000L));
 
         recentChatters.put(player.getUniqueId(), nextAllowedMessage);
-        new Scheduler(plugin).sync(() -> recentChatters.remove(uniqueId)).delay(chatDelay * 20L).run();
+        new Scheduler(getPlugin()).sync(() -> recentChatters.remove(uniqueId)).delay(chatDelay * 20L).run();
     }
 
     /**

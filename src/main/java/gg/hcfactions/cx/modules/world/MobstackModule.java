@@ -4,10 +4,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import gg.hcfactions.cx.CXService;
 import gg.hcfactions.cx.event.PreMobstackEvent;
 import gg.hcfactions.cx.modules.ICXModule;
 import gg.hcfactions.libs.base.util.Time;
-import gg.hcfactions.libs.bukkit.AresPlugin;
 import gg.hcfactions.libs.bukkit.scheduler.Scheduler;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,7 +28,7 @@ import org.bukkit.scheduler.BukkitTask;
 import java.util.*;
 
 public final class MobstackModule implements ICXModule, Listener {
-    @Getter public final AresPlugin plugin;
+    @Getter public final CXService service;
     @Getter public final String key;
     @Getter @Setter public boolean enabled;
 
@@ -68,8 +68,8 @@ public final class MobstackModule implements ICXModule, Listener {
             .put(EntityType.SNIFFER, ImmutableList.of(Material.TORCHFLOWER_SEEDS))
             .build();
 
-    public MobstackModule(AresPlugin plugin) {
-        this.plugin = plugin;
+    public MobstackModule(CXService service) {
+        this.service = service;
         this.key = "world.mobstacking.";
         this.stackableTypes = Lists.newArrayList();
         this.stackSkip = Lists.newArrayList();
@@ -84,7 +84,7 @@ public final class MobstackModule implements ICXModule, Listener {
             return;
         }
 
-        plugin.registerListener(this);
+        getPlugin().registerListener(this);
 
         startStackTickingTask();
     }
@@ -123,15 +123,15 @@ public final class MobstackModule implements ICXModule, Listener {
             try {
                 stackableTypes.add(EntityType.valueOf(entityName));
             } catch (IllegalArgumentException e) {
-                plugin.getAresLogger().error("bad entity type: " + entityName);
+                getPlugin().getAresLogger().error("bad entity type: " + entityName);
             }
         }
 
-        plugin.getAresLogger().info("loaded " + stackableTypes.size() + " stackable types");
+        getPlugin().getAresLogger().info("loaded " + stackableTypes.size() + " stackable types");
     }
 
     private void startStackTickingTask() {
-        stackTickingTask = new Scheduler(plugin).sync(() -> {
+        stackTickingTask = new Scheduler(getPlugin()).sync(() -> {
             for (World world : Bukkit.getWorlds()) {
                 for (LivingEntity livingEntity : world.getLivingEntities()) {
                     if (!stackableTypes.contains(livingEntity.getType())) {
@@ -402,6 +402,6 @@ public final class MobstackModule implements ICXModule, Listener {
         }
 
         breedCooldowns.put(player.getUniqueId(), (Time.now() + (breedingCooldown * 1000L)));
-        new Scheduler(plugin).sync(() -> breedCooldowns.remove(uniqueId)).delay(breedingCooldown * 20L).run();
+        new Scheduler(getPlugin()).sync(() -> breedCooldowns.remove(uniqueId)).delay(breedingCooldown * 20L).run();
     }
 }
