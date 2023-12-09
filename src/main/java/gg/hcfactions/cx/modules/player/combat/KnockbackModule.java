@@ -158,7 +158,7 @@ public final class KnockbackModule implements ICXModule, Listener {
      */
     @EventHandler (priority = EventPriority.HIGHEST)
     public void onPlayerDamagePlayer(PlayerDamagePlayerEvent event) {
-        if (!isEnabled() || event.isCancelled()) {
+        if (!isEnabled() || event.isCancelled() || !event.getType().equals(PlayerDamagePlayerEvent.DamageType.PHYSICAL)) {
             return;
         }
 
