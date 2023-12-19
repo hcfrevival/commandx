@@ -242,11 +242,11 @@ public final class WorldModule implements ICXModule, Listener {
             return;
         }
 
-        if (event.getEntity() instanceof Player) {
-            return;
-        }
+        if (
+                event.getEntity() instanceof Player
+                || event.getEntity() instanceof FallingBlock
+                || event.getEntity() instanceof Villager) {
 
-        if (event.getEntity() instanceof FallingBlock) {
             return;
         }
 
