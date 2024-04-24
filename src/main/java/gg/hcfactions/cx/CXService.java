@@ -21,47 +21,49 @@ import gg.hcfactions.cx.modules.world.*;
 import gg.hcfactions.cx.rollback.RollbackManager;
 import gg.hcfactions.cx.warp.WarpManager;
 import gg.hcfactions.libs.bukkit.AresPlugin;
-import gg.hcfactions.libs.bukkit.remap.ERemappedEnchantment;
 import gg.hcfactions.libs.bukkit.scheduler.Scheduler;
 import gg.hcfactions.libs.bukkit.services.IAresService;
+import gg.hcfactions.libs.bukkit.utils.Enchants;
 import lombok.Getter;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.enchantments.Enchantment;
 
 import java.util.List;
 
+@Getter
 public final class CXService implements IAresService {
-    @Getter public final AresPlugin plugin;
-    @Getter public final NamespacedKey namespacedKey;
-    @Getter public final String name = "Command X";
+    public final AresPlugin plugin;
+    public final NamespacedKey namespacedKey;
+    public final String name = "Command X";
 
-    @Getter public MessageManager messageManager;
-    @Getter public VanishManager vanishManager;
-    @Getter public WarpManager warpManager;
-    @Getter public KitManager kitManager;
-    @Getter public BroadcastManager broadcastManager;
-    @Getter public HologramManager hologramManager;
-    @Getter public RollbackManager rollbackManager;
+    public MessageManager messageManager;
+    public VanishManager vanishManager;
+    public WarpManager warpManager;
+    public KitManager kitManager;
+    public BroadcastManager broadcastManager;
+    public HologramManager hologramManager;
+    public RollbackManager rollbackManager;
 
-    @Getter public RebootModule rebootModule;
-    @Getter public AnimationModule animationModule;
-    @Getter public KnockbackModule knockbackModule;
-    @Getter public ItemVelocityModule itemVelocityModule;
-    @Getter public WorldModule worldModule;
-    @Getter public ChatModule chatModule;
-    @Getter public PotionLimitModule potionLimitModule;
-    @Getter public EnchantLimitModule enchantLimitModule;
-    @Getter public MobstackModule mobstackModule;
-    @Getter public ItemModificationModule itemModificationModule;
-    @Getter public RegenModule regenModule;
-    @Getter public TablistModule tablistModule;
-    @Getter public ExploitPatchModule exploitPatchModule;
-    @Getter public EXPBonusModule expBonusModule;
-    @Getter public DurabilityModule durabilityModule;
-    @Getter public ElytraBalanceModule elytraBalanceModule;
-    @Getter public ShulkerModule shulkerModule;
-    @Getter public EntityDropModule entityDropModule;
-    @Getter public PotionPrecisionModule potionPrecisionModule;
+    public RebootModule rebootModule;
+    public AnimationModule animationModule;
+    public KnockbackModule knockbackModule;
+    public ItemVelocityModule itemVelocityModule;
+    public WorldModule worldModule;
+    public ChatModule chatModule;
+    public PotionLimitModule potionLimitModule;
+    public EnchantLimitModule enchantLimitModule;
+    public MobstackModule mobstackModule;
+    public ItemModificationModule itemModificationModule;
+    public RegenModule regenModule;
+    public TablistModule tablistModule;
+    public ExploitPatchModule exploitPatchModule;
+    public EXPBonusModule expBonusModule;
+    public DurabilityModule durabilityModule;
+    public ElytraBalanceModule elytraBalanceModule;
+    public ShulkerModule shulkerModule;
+    public EntityDropModule entityDropModule;
+    public PotionPrecisionModule potionPrecisionModule;
 
     public CXService(AresPlugin plugin) {
         this.plugin = plugin;
@@ -119,8 +121,8 @@ public final class CXService implements IAresService {
         plugin.getCommandManager().getCommandCompletions().registerAsyncCompletion("enchants", ctx -> {
             final List<String> names = Lists.newArrayList();
 
-            for (ERemappedEnchantment remapped : ERemappedEnchantment.values()) {
-                names.add(remapped.name().toLowerCase());
+            for (Enchantment enc : Enchants.getAllEnchantments()) {
+                names.add(enc.getKey().getKey().toLowerCase());
             }
 
             return names;

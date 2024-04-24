@@ -5,7 +5,7 @@ import com.google.common.collect.Maps;
 import gg.hcfactions.cx.CXService;
 import gg.hcfactions.cx.event.EnchantLimitApplyEvent;
 import gg.hcfactions.cx.modules.ICXModule;
-import gg.hcfactions.libs.bukkit.remap.ERemappedEnchantment;
+import gg.hcfactions.libs.bukkit.utils.Enchants;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang.StringUtils;
@@ -69,7 +69,7 @@ public final class EnchantLimitModule implements ICXModule, Listener {
         this.enabled = conf.getBoolean(getKey() + "enabled");
 
         for (String enchantmentName : Objects.requireNonNull(conf.getConfigurationSection(getKey() + "limits")).getKeys(false)) {
-            final Enchantment enchantment = ERemappedEnchantment.getEnchantment(enchantmentName);
+            final Enchantment enchantment = Enchants.getEnchantment(enchantmentName);
             final int maxLevel = conf.getInt(getKey() + "limits." + enchantmentName);
 
             if (enchantment == null) {
@@ -100,7 +100,7 @@ public final class EnchantLimitModule implements ICXModule, Listener {
     private Map<Enchantment, Integer> getRandomEnchantment(ItemStack item) {
         final List<Enchantment> validEnchantments = Lists.newArrayList();
 
-        for (Enchantment enc : Enchantment.values()) {
+        for (Enchantment enc : Enchants.getAllEnchantments()) {
             if (getMaxEnchantmentLevel(enc) <= 0) {
                 continue;
             }
@@ -110,22 +110,22 @@ public final class EnchantLimitModule implements ICXModule, Listener {
             }
         }
 
-        // catch-all that provies unbreaking 1
+        // catch-all
         if (validEnchantments.isEmpty()) {
-            return Collections.singletonMap(Enchantment.DURABILITY, 0);
+            return Collections.singletonMap(Enchantment.UNBREAKING, 0);
         }
 
         int cursor = 0;
         final int pos = Math.abs(random.nextInt(validEnchantments.size()));
         final int randomLevel = Math.abs(random.nextInt(3));
 
-        for (ERemappedEnchantment remapped : ERemappedEnchantment.values()) {
+        for (Enchantment enc : Enchants.getAllEnchantments()) {
             if (cursor != pos) {
                 cursor++;
                 continue;
             }
 
-            return Collections.singletonMap(remapped.getEnchantment(), enchantLimits.getOrDefault(remapped.getEnchantment(), randomLevel));
+            return Collections.singletonMap(enc, enchantLimits.getOrDefault(enc, randomLevel));
         }
 
         return null;

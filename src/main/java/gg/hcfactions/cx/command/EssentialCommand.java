@@ -8,9 +8,9 @@ import gg.hcfactions.cx.CXService;
 import gg.hcfactions.cx.menu.InvseeMenu;
 import gg.hcfactions.libs.acf.BaseCommand;
 import gg.hcfactions.libs.acf.annotation.*;
-import gg.hcfactions.libs.bukkit.remap.ERemappedEnchantment;
 import gg.hcfactions.libs.bukkit.services.impl.ranks.RankService;
 import gg.hcfactions.libs.bukkit.services.impl.ranks.model.impl.AresRank;
+import gg.hcfactions.libs.bukkit.utils.Enchants;
 import gg.hcfactions.libs.bukkit.utils.Players;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -358,7 +358,7 @@ public final class EssentialCommand extends BaseCommand {
     @CommandCompletion("@enchants")
     @Syntax("<enchantment> <level> [-a]")
     public void onEnchant(Player player, String enchantmentName, String levelName, @Optional String flag) {
-        final Enchantment enchantment = ERemappedEnchantment.getEnchantment(enchantmentName);
+        final Enchantment enchantment = Enchants.getEnchantment(enchantmentName);
 
         if (enchantment == null) {
             player.sendMessage(ChatColor.RED + "Enchantment not found");
