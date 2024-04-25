@@ -29,11 +29,12 @@ import org.bukkit.potion.PotionEffectType;
 import java.util.List;
 import java.util.Objects;
 
+@Getter
 public final class PotionLimitModule implements ICXModule, Listener {
-    @Getter public final CXService service;
-    @Getter public final String key;
-    @Getter @Setter public boolean enabled;
-    @Getter public final List<PotionLimit> potionLimits;
+    public final CXService service;
+    public final String key;
+    public final List<PotionLimit> potionLimits;
+    @Setter public boolean enabled;
 
     public PotionLimitModule(CXService service) {
         this.service = service;
@@ -77,7 +78,7 @@ public final class PotionLimitModule implements ICXModule, Listener {
             final boolean canSplash = conf.get(getKey() + "limits." + effectName + ".can_splash") == null || conf.getBoolean(getKey() + "limits." + effectName + "can_splash");
 
             if (type == null) {
-                getPlugin().getAresLogger().error("bad effect type: " + effectName);
+                getPlugin().getAresLogger().error("bad effect type: {}", effectName);
                 continue;
             }
 
@@ -85,7 +86,7 @@ public final class PotionLimitModule implements ICXModule, Listener {
             potionLimits.add(limit);
         }
 
-        getPlugin().getAresLogger().info("loaded " + potionLimits.size() + " potion limits");
+        getPlugin().getAresLogger().info("loaded {} potion limits", potionLimits.size());
     }
 
     /**
@@ -109,9 +110,6 @@ public final class PotionLimitModule implements ICXModule, Listener {
 
         for (PotionEffect effect : event.getPotion().getEffects()) {
             final PotionLimit limit = getPotionLimit(effect.getType());
-            final boolean extended = (effect.getType().equals(PotionEffectType.POISON)
-                    ? effect.getDuration() > 45*20
-                    : effect.getDuration() > 90*20);
 
             if (limit == null) {
                 continue;
@@ -135,7 +133,7 @@ public final class PotionLimitModule implements ICXModule, Listener {
                 return;
             }
 
-            if (!limit.extendable() && extended) {
+            if (!limit.extendable() && Effects.isEffectExtended(effect)) {
                 event.setCancelled(true);
                 event.getAffectedEntities().clear();
             }
@@ -177,7 +175,9 @@ public final class PotionLimitModule implements ICXModule, Listener {
                     return;
                 }
 
-                // TODO: Re-implement extended potion check
+                if (!limit.isExtendable() && Effects.isEffectExtended(effect)) {
+                    event.setCancelled(true);
+                }
             }
         });
     }
@@ -221,7 +221,10 @@ public final class PotionLimitModule implements ICXModule, Listener {
                     return;
                 }
 
-                // TODO: Re-implement extended potion limit check
+                if (!limit.extendable() && Effects.isEffectExtended(effect)) {
+                    player.sendMessage(ChatColor.RED + "This potion has been disabled");
+                    event.setCancelled(true);
+                }
             }
         });
     }
@@ -237,9 +240,6 @@ public final class PotionLimitModule implements ICXModule, Listener {
 
         for (PotionEffect effect : player.getActivePotionEffects()) {
             final PotionLimit limit = getPotionLimit(effect.getType());
-            final boolean extended = (effect.getType().equals(PotionEffectType.POISON)
-                    ? effect.getDuration() > 45*20
-                    : effect.getDuration() > 90*20);
 
             if (effect.isInfinite()) {
                 continue;
@@ -259,7 +259,7 @@ public final class PotionLimitModule implements ICXModule, Listener {
                 continue;
             }
 
-            if (!limit.isExtendable() && extended) {
+            if (!limit.isExtendable() && Effects.isEffectExtended(effect)) {
                 toRemove.add(effect.getType());
             }
         }
@@ -323,7 +323,14 @@ public final class PotionLimitModule implements ICXModule, Listener {
                 return;
             }
 
-            // TODO: Re-implement extended potion limit check
+            if (!limit.isExtendable() && Effects.isEffectExtended(effect)) {
+                if (arrow.getShooter() instanceof final Player player) {
+                    player.sendMessage(ChatColor.RED + "This Tipped Arrow can not be extended");
+                }
+
+                event.setCancelled(true);
+                return;
+            }
         });
     }
 

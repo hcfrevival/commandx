@@ -115,27 +115,27 @@ combat:
   potion_limits:
     enabled: true
     limits:
-      HARMING:
+      instant_damage:
         disabled: true
         amplifiable: false
         extendable: false
-      SLOWNESS:
+      slowness:
         disabled: false
         amplifiable: false
         extendable: false
-      POISON:
+      poison:
         disabled: false
         amplifiable: false
         extendable: false
-      REGENERATION:
+      regeneration:
         disabled: true
         amplifiable: false
         extendable: false
-      WEAKNESS:
+      weakness:
         disabled: true
         amplifiable: false
         extendable: false
-      SLOW_FALLING:
+      slow_falling:
         disabled: false;
         amplifiable: false
         extendable: true
