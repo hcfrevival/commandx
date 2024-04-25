@@ -73,14 +73,14 @@ public final class EnchantLimitModule implements ICXModule, Listener {
             final int maxLevel = conf.getInt(getKey() + "limits." + enchantmentName);
 
             if (enchantment == null) {
-                getPlugin().getAresLogger().error("bad enchantment name: " + enchantmentName);
+                getPlugin().getAresLogger().error("bad enchantment name: {}", enchantmentName);
                 continue;
             }
 
             enchantLimits.put(enchantment, maxLevel);
         }
 
-        getPlugin().getAresLogger().info("loaded " + enchantLimits.size() + " enchantment limits");
+        getPlugin().getAresLogger().info("loaded {} enchantment limits", enchantLimits.size());
     }
 
     /**
@@ -115,20 +115,15 @@ public final class EnchantLimitModule implements ICXModule, Listener {
             return Collections.singletonMap(Enchantment.UNBREAKING, 0);
         }
 
-        int cursor = 0;
         final int pos = Math.abs(random.nextInt(validEnchantments.size()));
         final int randomLevel = Math.abs(random.nextInt(3));
 
-        for (Enchantment enc : Enchants.getAllEnchantments()) {
-            if (cursor != pos) {
-                cursor++;
-                continue;
-            }
-
-            return Collections.singletonMap(enc, enchantLimits.getOrDefault(enc, randomLevel));
+        final Enchantment randomEnchantment = Enchants.getAllEnchantments().get(pos);
+        if (randomEnchantment == null) {
+            return null;
         }
 
-        return null;
+        return Collections.singletonMap(randomEnchantment, enchantLimits.getOrDefault(randomEnchantment, randomLevel));
     }
 
     /**
