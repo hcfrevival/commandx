@@ -17,10 +17,11 @@ import org.bukkit.scheduler.BukkitTask;
 
 import java.util.List;
 
+@Getter
 public final class InvseeMenu extends GenericMenu {
-    @Getter public final CXService service;
-    @Getter public final Player observed;
-    @Getter public BukkitTask updateTask;
+    public final CXService service;
+    public final Player observed;
+    public BukkitTask updateTask;
 
     public InvseeMenu(CXService service, Player player, Player observed) {
         super(service.getPlugin(), player, observed.getName(), 6);
@@ -65,7 +66,7 @@ public final class InvseeMenu extends GenericMenu {
                 .setMaterial(Material.GLASS_BOTTLE)
                 .setName(ChatColor.AQUA + "Potions")
                 .addLore(potionEffects)
-                .addFlag(ItemFlag.HIDE_POTION_EFFECTS)
+                .addFlag(ItemFlag.HIDE_ATTRIBUTES)
                 .build();
 
         for (int i = 0; i < observed.getInventory().getSize(); i++) {
