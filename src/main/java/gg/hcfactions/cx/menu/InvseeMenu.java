@@ -66,7 +66,7 @@ public final class InvseeMenu extends GenericMenu {
                 .setMaterial(Material.GLASS_BOTTLE)
                 .setName(ChatColor.AQUA + "Potions")
                 .addLore(potionEffects)
-                .addFlag(ItemFlag.HIDE_ATTRIBUTES)
+                .addFlag(ItemFlag.HIDE_ADDITIONAL_TOOLTIP)
                 .build();
 
         for (int i = 0; i < observed.getInventory().getSize(); i++) {
