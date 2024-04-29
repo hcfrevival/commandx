@@ -138,7 +138,6 @@ public final class CXService implements IAresService {
             return names;
         });
 
-        animationModule = new AnimationModule(this);
         knockbackModule = new KnockbackModule(this);
         itemVelocityModule = new ItemVelocityModule(this);
         worldModule = new WorldModule(this);
@@ -157,7 +156,6 @@ public final class CXService implements IAresService {
         shulkerModule = new ShulkerModule(this);
         entityDropModule = new EntityDropModule(this);
         potionPrecisionModule = new PotionPrecisionModule(this);
-        animationModule.onEnable();
         knockbackModule.onEnable();
         itemVelocityModule.onEnable();
         worldModule.onEnable();
@@ -176,6 +174,12 @@ public final class CXService implements IAresService {
         shulkerModule.onEnable();
         entityDropModule.onEnable();
         potionPrecisionModule.onEnable();
+
+        // TODO: Properly store modules in a collection and enable them then remove this conditional
+        if (plugin.isProtocolRegistered()) {
+            animationModule = new AnimationModule(this);
+            animationModule.onEnable();
+        }
     }
 
     @Override
