@@ -108,7 +108,14 @@ public final class PotionLimitModule implements ICXModule, Listener {
             return;
         }
 
-        for (PotionEffect effect : event.getPotion().getEffects()) {
+        final ItemStack item = event.getPotion().getItem();
+        final PotionMeta meta = (PotionMeta) item.getItemMeta();
+
+        if (meta == null || meta.getBasePotionType() == null || meta.getBasePotionType().getPotionEffects().isEmpty()) {
+            return;
+        }
+
+        for (PotionEffect effect : meta.getBasePotionType().getPotionEffects()) {
             final PotionLimit limit = getPotionLimit(effect.getType());
 
             if (limit == null) {
@@ -335,5 +342,10 @@ public final class PotionLimitModule implements ICXModule, Listener {
     }
 
     public record PotionLimit(@Getter PotionEffectType type, @Getter boolean disabled, @Getter boolean extendable,
-                              @Getter boolean amplifiable, @Getter boolean canSplash) {}
+                              @Getter boolean amplifiable, @Getter boolean canSplash) {
+        @Override
+        public String toString() {
+            return "type: " + type + ", disabled: " + disabled + ", extendable: " + extendable + ", amplifiable: " + amplifiable + ", canSplash: " + canSplash;
+        }
+    }
 }
