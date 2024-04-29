@@ -66,11 +66,11 @@ public final class EXPBonusModule implements ICXModule, Listener {
         final Player player = event.getPlayer();
         final ItemStack hand = player.getInventory().getItemInMainHand();
 
-        if (!hand.containsEnchantment(Enchantment.LOOT_BONUS_BLOCKS)) {
+        if (!hand.containsEnchantment(Enchantment.FORTUNE)) {
             return;
         }
 
-        final int multiplier = hand.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS) + 1;
+        final int multiplier = hand.getEnchantmentLevel(Enchantment.FORTUNE) + 1;
         final int xp = event.getExpToDrop();
 
         event.setExpToDrop((int)(Math.round(xp * (multiplier * fortuneModifier))));
@@ -95,11 +95,11 @@ public final class EXPBonusModule implements ICXModule, Listener {
 
         final ItemStack hand = killer.getInventory().getItemInMainHand();
 
-        if (!hand.containsEnchantment(Enchantment.LOOT_BONUS_MOBS)) {
+        if (!hand.containsEnchantment(Enchantment.LOOTING)) {
             return;
         }
 
-        final int multiplier = hand.getEnchantmentLevel(Enchantment.LOOT_BONUS_MOBS) + 1;
+        final int multiplier = hand.getEnchantmentLevel(Enchantment.LOOTING) + 1;
         final int xp = event.getDroppedExp();
 
         event.setDroppedExp((int)(Math.round(xp * (multiplier * lootingModifier))));

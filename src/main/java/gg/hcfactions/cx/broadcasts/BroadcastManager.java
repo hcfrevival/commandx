@@ -59,7 +59,7 @@ public final class BroadcastManager {
 
         queuedMessages.addAll(messageRepository);
 
-        service.getPlugin().getAresLogger().info("loaded " + messageRepository.size() + " broadcasts");
+        service.getPlugin().getAresLogger().info("loaded {} broadcasts", messageRepository.size());
     }
 
     /**

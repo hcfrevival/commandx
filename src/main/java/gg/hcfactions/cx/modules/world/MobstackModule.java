@@ -46,7 +46,7 @@ public final class MobstackModule implements ICXModule, Listener {
     private final ImmutableMap<EntityType, List<Material>> BREED_MATS = ImmutableMap.<EntityType, List<Material>>builder()
             .put(EntityType.COW, ImmutableList.of(Material.WHEAT))
             .put(EntityType.SHEEP, ImmutableList.of(Material.WHEAT))
-            .put(EntityType.MUSHROOM_COW, ImmutableList.of(Material.WHEAT))
+            .put(EntityType.MOOSHROOM, ImmutableList.of(Material.WHEAT))
             .put(EntityType.HORSE, ImmutableList.of(Material.GOLDEN_APPLE, Material.ENCHANTED_GOLDEN_APPLE, Material.GOLDEN_CARROT))
             .put(EntityType.DONKEY, ImmutableList.of(Material.GOLDEN_APPLE, Material.ENCHANTED_GOLDEN_APPLE, Material.GOLDEN_CARROT))
             .put(EntityType.CHICKEN, ImmutableList.of(Material.MELON_SEEDS, Material.PUMPKIN_SEEDS, Material.WHEAT_SEEDS, Material.BEETROOT_SEEDS))

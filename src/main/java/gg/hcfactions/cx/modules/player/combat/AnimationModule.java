@@ -68,7 +68,7 @@ public final class AnimationModule implements ICXModule, Listener {
 
     @Override
     public void onEnable() {
-        if (getPlugin().getRegisteredProtocolManager() == null) {
+        if (!getPlugin().isProtocolRegistered()) {
             getPlugin().getAresLogger().error("failed to register animation module: protocollib not registered");
             return;
         }

@@ -6,7 +6,6 @@ import gg.hcfactions.cx.CXService;
 import gg.hcfactions.cx.command.KnockbackCommand;
 import gg.hcfactions.cx.event.PlayerSprintResetEvent;
 import gg.hcfactions.cx.modules.ICXModule;
-import gg.hcfactions.libs.bukkit.AresPlugin;
 import gg.hcfactions.libs.bukkit.events.impl.PlayerDamagePlayerEvent;
 import lombok.Getter;
 import lombok.Setter;

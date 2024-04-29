@@ -13,8 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Map;
 
 public final class EnchantLimitApplyEvent extends Event implements Cancellable {
-    @Getter
-    public static final HandlerList handlerList = new HandlerList();
+    @Getter public static final HandlerList handlerList = new HandlerList();
     @Getter public final Player player;
     @Getter public final ItemStack item;
     @Getter public final Map<Enchantment, Integer> limitedEnchantments;
