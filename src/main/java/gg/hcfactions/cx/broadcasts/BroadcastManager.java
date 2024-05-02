@@ -7,8 +7,9 @@ import gg.hcfactions.libs.bukkit.scheduler.Scheduler;
 import gg.hcfactions.libs.bukkit.services.impl.account.AccountService;
 import gg.hcfactions.libs.bukkit.services.impl.account.model.AresAccount;
 import lombok.Getter;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -18,13 +19,13 @@ import java.util.Queue;
 
 public final class BroadcastManager {
     @Getter public CXService service;
-    @Getter public final List<String> messageRepository;
-    @Getter public final Queue<String> queuedMessages;
+    @Getter public final List<Component> messageRepository;
+    @Getter public final Queue<Component> queuedMessages;
     @Getter public BukkitTask messageTask;
 
     private boolean enabled;
-    private String broadcastPrefix;
     private int broadcastInterval;
+    private Component broadcastPrefix;
 
     public BroadcastManager(CXService service) {
         this.service = service;
@@ -53,13 +54,14 @@ public final class BroadcastManager {
         }
 
         enabled = conf.getBoolean("enabled");
-        broadcastPrefix = ChatColor.translateAlternateColorCodes('&', Objects.requireNonNull(conf.getString("prefix")));
+        broadcastPrefix = service.getPlugin().getMiniMessage().deserialize(Objects.requireNonNull(conf.getString("prefix")));
         broadcastInterval = conf.getInt("interval");
-        unformatted.forEach(msg -> messageRepository.add(ChatColor.translateAlternateColorCodes('&', msg)));
+
+        unformatted.forEach(msg -> messageRepository.add(service.getPlugin().getMiniMessage().deserialize(msg)));
 
         queuedMessages.addAll(messageRepository);
 
-        service.getPlugin().getAresLogger().info("loaded {} broadcasts", messageRepository.size());
+        service.getPlugin().getAresLogger().info("Loaded {} Broadcasts", messageRepository.size());
     }
 
     /**
@@ -74,7 +76,7 @@ public final class BroadcastManager {
             final AccountService accountService = (AccountService)service.getPlugin().getService(AccountService.class);
 
             if (accountService == null) {
-                service.getPlugin().getAresLogger().error("failed to run broadcast task: account service is null");
+                service.getPlugin().getAresLogger().error("Failed to run broadcast task: Account service is null");
                 return;
             }
 
@@ -82,13 +84,13 @@ public final class BroadcastManager {
                 resetQueue();
             }
 
-            final String message = getQueuedMessages().remove();
+            final Component message = getQueuedMessages().remove();
 
             Bukkit.getOnlinePlayers().forEach(onlinePlayer -> {
                 final AresAccount cached = accountService.getCachedAccount(onlinePlayer.getUniqueId());
 
                 if (cached == null || cached.getSettings().isEnabled(AresAccount.Settings.SettingValue.BROADCASTS_ENABLED)) {
-                    onlinePlayer.sendMessage(broadcastPrefix + " " + message);
+                    onlinePlayer.sendMessage(broadcastPrefix.append(message));
                 }
             });
         }).repeat(broadcastInterval*20L, broadcastInterval*20L).run();
