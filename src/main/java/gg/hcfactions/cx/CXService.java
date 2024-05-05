@@ -2,10 +2,12 @@ package gg.hcfactions.cx;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import gg.hcfactions.cx.attributes.AttributeManager;
 import gg.hcfactions.cx.broadcasts.BroadcastManager;
 import gg.hcfactions.cx.command.*;
 import gg.hcfactions.cx.hologram.HologramManager;
 import gg.hcfactions.cx.kits.KitManager;
+import gg.hcfactions.cx.listener.AttributeListener;
 import gg.hcfactions.cx.listener.HologramListener;
 import gg.hcfactions.cx.listener.SignListener;
 import gg.hcfactions.cx.listener.WarpGatewayListener;
@@ -47,6 +49,7 @@ public final class CXService implements IAresService {
     public BroadcastManager broadcastManager;
     public HologramManager hologramManager;
     public RollbackManager rollbackManager;
+    public AttributeManager attributeManager;
     public RebootModule rebootModule;
     public AnimationModule animationModule;
     public KnockbackModule knockbackModule;
@@ -119,14 +122,17 @@ public final class CXService implements IAresService {
         plugin.registerCommand(new KitCommand(this));
         plugin.registerCommand(new HologramCommand(this));
         plugin.registerCommand(new RollbackCommand(this));
+        plugin.registerCommand(new AttributeCommand(this));
 
         plugin.registerListener(new SignListener(this));
         plugin.registerListener(new WarpGatewayListener(this));
         plugin.registerListener(new HologramListener(this));
+        plugin.registerListener(new AttributeListener(this));
 
         messageManager = new MessageManager(this);
         vanishManager = new VanishManager(this);
         rollbackManager = new RollbackManager(this);
+        attributeManager = new AttributeManager(this);
 
         broadcastManager = new BroadcastManager(this);
         broadcastManager.loadBroadcasts();
@@ -173,6 +179,12 @@ public final class CXService implements IAresService {
                 names.add(material.name());
             }
 
+            return names;
+        });
+
+        plugin.getCommandManager().getCommandCompletions().registerAsyncCompletion("attributes", ctx -> {
+            final List<String> names = Lists.newArrayList();
+            AttributeManager.DEFAULT_ATTRIBUTES.keySet().forEach(key -> names.add(key.name()));
             return names;
         });
 
