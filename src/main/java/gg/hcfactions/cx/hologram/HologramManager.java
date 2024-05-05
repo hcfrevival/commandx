@@ -8,7 +8,7 @@ import gg.hcfactions.cx.hologram.impl.HologramExecutor;
 import gg.hcfactions.libs.bukkit.location.impl.PLocatable;
 import gg.hcfactions.libs.bukkit.utils.Configs;
 import lombok.Getter;
-import org.bukkit.ChatColor;
+import net.kyori.adventure.text.Component;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.util.List;
@@ -19,11 +19,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+@Getter
 public final class HologramManager {
-    @Getter public CXService service;
-    @Getter public HologramExecutor executor;
-    @Getter public Set<Hologram> hologramRepository;
-    @Getter public AtomicInteger nextId;
+    public CXService service;
+    public HologramExecutor executor;
+    public Set<Hologram> hologramRepository;
+    public AtomicInteger nextId;
 
     public HologramManager(CXService service) {
         this.service = service;
@@ -54,18 +55,18 @@ public final class HologramManager {
 
         for (String hid : Objects.requireNonNull(conf.getConfigurationSection("data")).getKeys(false)) {
             final int hologramId = Integer.parseInt(hid);
+            final List<Component> formatted = Lists.newArrayList();
             final List<String> hologramLines = conf.getStringList("data." + hid + ".text");
-            final List<String> formatted = Lists.newArrayList();
             final PLocatable location = Configs.parsePlayerLocation(conf, "data." + hid + ".location");
             final EHologramOrder order = EHologramOrder.valueOf(conf.getString("data." + hid + ".order"));
 
-            hologramLines.forEach(line -> formatted.add(ChatColor.translateAlternateColorCodes('&', line)));
+            hologramLines.forEach(line -> formatted.add(service.getPlugin().getMiniMessage().deserialize(line)));
 
             final Hologram hologram = new Hologram(service, hologramId, formatted, location, order);
             hologramRepository.add(hologram);
         }
 
-        service.getPlugin().getAresLogger().info("loaded " + hologramRepository.size() + " holograms");
+        service.getPlugin().getAresLogger().info("Loaded {} Holograms", hologramRepository.size());
     }
 
     /**
@@ -77,13 +78,16 @@ public final class HologramManager {
         conf.set("next_id", nextId.intValue());
 
         for (Hologram holo : hologramRepository) {
-            conf.set("data." + holo.getId() + ".text", holo.getText());
+            final List<String> serialized = Lists.newArrayList();
+            holo.getText().forEach(component -> serialized.add(service.getPlugin().getMiniMessage().serialize(component)));
+
+            conf.set("data." + holo.getId() + ".text", serialized);
             conf.set("data." + holo.getId() + ".order", holo.getOrder().name());
             Configs.writePlayerLocation(conf, "data." + holo.getId() + ".location", holo.getOrigin());
         }
 
         service.getPlugin().saveConfiguration("holograms", conf);
-        service.getPlugin().getAresLogger().info("saved " + hologramRepository.size() + " holograms");
+        service.getPlugin().getAresLogger().info("Saved {} holograms", hologramRepository.size());
     }
 
     /**
@@ -94,7 +98,7 @@ public final class HologramManager {
         final YamlConfiguration conf = service.getPlugin().loadConfiguration("holograms");
         conf.set("data." + hologram.getId(), null);
         service.getPlugin().saveConfiguration("holograms", conf);
-        service.getPlugin().getAresLogger().info("deleted hologram (" + hologram.getId() + ")");
+        service.getPlugin().getAresLogger().info("Deleted hologram ({})", hologram.getId());
     }
 
     /**
@@ -110,7 +114,7 @@ public final class HologramManager {
      * Spawns all holograms in memory
      */
     public void spawnHolograms() {
-        service.getPlugin().getAresLogger().info("spawning " + hologramRepository.size() + " holograms");
+        service.getPlugin().getAresLogger().info("Spawning {} holograms", hologramRepository.size());
         hologramRepository.forEach(Hologram::spawn);
     }
 
@@ -118,7 +122,7 @@ public final class HologramManager {
      * Despawns all holograms in memory
      */
     public void despawnHolograms() {
-        service.getPlugin().getAresLogger().info("despawning " + hologramRepository.size() + " holograms");
+        service.getPlugin().getAresLogger().info("Despawning {} holograms", hologramRepository.size());
 
         hologramRepository.forEach(Hologram::despawn);
         hologramRepository.clear();

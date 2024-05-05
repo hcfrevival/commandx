@@ -12,8 +12,10 @@ import gg.hcfactions.libs.bukkit.location.impl.PLocatable;
 import gg.hcfactions.libs.bukkit.scheduler.Scheduler;
 import lombok.Getter;
 import lombok.Setter;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
@@ -163,7 +165,9 @@ public final class ShulkerModule implements ICXModule, Listener {
         getLockedShulker(block).ifPresent(lockedShulkerBox -> {
             if (!lockedShulkerBox.isExpired()) {
                 event.setUseInteractedBlock(Event.Result.DENY);
-                player.sendMessage(ChatColor.RED + "This Shulker Box will unlock in " + ChatColor.RED + "" + ChatColor.BOLD + Time.convertToDecimal(lockedShulkerBox.getExpire() - Time.now()) + ChatColor.RED + "s");
+                player.sendMessage(Component.text("This Shulker Box will unlock in", NamedTextColor.RED)
+                        .appendSpace().append(Component.text(Time.convertToDecimal(lockedShulkerBox.getExpire() - Time.now()), NamedTextColor.RED).decoration(TextDecoration.BOLD, TextDecoration.State.TRUE))
+                        .append(Component.text("s", NamedTextColor.RED).decoration(TextDecoration.BOLD, TextDecoration.State.FALSE)));
             }
         });
     }
@@ -189,7 +193,7 @@ public final class ShulkerModule implements ICXModule, Listener {
             this.hologram = new Hologram(
                     service,
                     -1,
-                    List.of(ChatColor.RED + "Locked", ChatColor.YELLOW + Time.convertToRemaining(30 * 1000L)),
+                    List.of(Component.text("Locked", NamedTextColor.RED), Component.text(Time.convertToRemaining(30*1000L), NamedTextColor.YELLOW)),
                     new PLocatable(block.getWorld().getName(), block.getX() + 0.5, block.getY() - 0.5, block.getZ() + 0.5, 0.0F, 0.0F),
                     EHologramOrder.DESCENDING
             );
@@ -203,7 +207,7 @@ public final class ShulkerModule implements ICXModule, Listener {
             this.hologram = new Hologram(
                     service,
                     -1,
-                    List.of(ChatColor.RED + "Locked", ChatColor.YELLOW + Time.convertToRemaining(lockSeconds*1000L)),
+                    List.of(Component.text("Locked", NamedTextColor.RED), Component.text(Time.convertToRemaining(lockSeconds*1000L), NamedTextColor.YELLOW)),
                     new PLocatable(block.getWorld().getName(), block.getX() + 0.5, block.getY() - 0.5, block.getZ() + 0.5, 0.0F, 0.0F),
                     EHologramOrder.DESCENDING
             );
@@ -223,7 +227,7 @@ public final class ShulkerModule implements ICXModule, Listener {
                     return;
                 }
 
-                hologram.updateLine(1, ChatColor.YELLOW + Time.convertToRemaining(getExpire() - Time.now()));
+                hologram.updateLine(1, Component.text(Time.convertToRemaining(getExpire() - Time.now()), NamedTextColor.YELLOW));
             }).repeat(0L, 20L).run();
         }
 

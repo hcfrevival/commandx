@@ -1,7 +1,7 @@
 enabled: true
-prefix: '&7[&bTip&7]'
+prefix: '<b><aqua>TIP:</aqua></b> '
 interval: 60
 messages:
-  - '&6Example message 1'
-  - '&4Example message 2'
-  - '&2Example message 3'
+  - "This is same example text lol XD"
+  - "<gold>Oooh look at me big fancy broadcast with a</gold> <click:open_url:'https://discord.gg/revivalnetwork'><b><blue>[BUTTON]</blue></b></click>"
+  - "<green><click:suggest_command:'/kill'><hover:show_text:'hey'>Another test broadcast</hover></click></green>"

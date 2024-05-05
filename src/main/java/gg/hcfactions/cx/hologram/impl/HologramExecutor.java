@@ -9,13 +9,21 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import java.util.Collections;
 
+@Getter
 @AllArgsConstructor
 public final class HologramExecutor implements IHologramExecutor {
-    @Getter public HologramManager manager;
+    public HologramManager manager;
 
     @Override
     public void createHologram(PLocatable location, String initialText, EHologramOrder order) {
-        final Hologram holo = new Hologram(manager.getService(), manager.getNextId().getAndIncrement(), Collections.singletonList(initialText), location, order);
+        final Hologram holo = new Hologram(
+                manager.getService(),
+                manager.getNextId().getAndIncrement(),
+                Collections.singletonList(manager.getService().getPlugin().getMiniMessage().deserialize(initialText)),
+                location,
+                order
+        );
+
         manager.getHologramRepository().add(holo);
         manager.saveHolograms();
 
@@ -31,7 +39,7 @@ public final class HologramExecutor implements IHologramExecutor {
             return;
         }
 
-        holo.addLine(text);
+        holo.addLine(manager.getService().getPlugin().getMiniMessage().deserialize(text));
         manager.saveHolograms();
         promise.resolve();
     }
@@ -65,7 +73,7 @@ public final class HologramExecutor implements IHologramExecutor {
             return;
         }
 
-        final boolean updated = holo.updateLine(index, newText);
+        final boolean updated = holo.updateLine(index, manager.getService().getPlugin().getMiniMessage().deserialize(newText));
 
         if (!updated) {
             promise.reject("Failed to remove line (out of bounds or no match)");
