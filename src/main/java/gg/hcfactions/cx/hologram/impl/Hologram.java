@@ -5,7 +5,7 @@ import gg.hcfactions.cx.CXService;
 import gg.hcfactions.cx.hologram.EHologramOrder;
 import gg.hcfactions.libs.bukkit.location.impl.PLocatable;
 import lombok.Getter;
-import org.bukkit.ChatColor;
+import net.kyori.adventure.text.Component;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -14,23 +14,20 @@ import org.bukkit.persistence.PersistentDataType;
 import java.util.List;
 import java.util.Objects;
 
+@Getter
 public final class Hologram {
-    @Getter public CXService service;
-    @Getter public int id;
-    @Getter public List<String> text;
-    @Getter public PLocatable origin;
-    @Getter public EHologramOrder order;
+    public CXService service;
+    public int id;
+    public List<Component> text;
+    public PLocatable origin;
+    public EHologramOrder order;
 
-    public Hologram(CXService service, int id, List<String> text, PLocatable origin, EHologramOrder order) {
+    public Hologram(CXService service, int id, List<Component> text, PLocatable origin, EHologramOrder order) {
         this.service = service;
         this.id = id;
-        this.text = Lists.newArrayList();
         this.origin = origin;
         this.order = order;
-
-        for (String line : text) {
-            this.text.add(ChatColor.translateAlternateColorCodes('&', line));
-        }
+        this.text = Lists.newArrayList(text);
     }
 
     /**
@@ -39,14 +36,14 @@ public final class Hologram {
     public void spawn() {
         double offset = 0.0;
 
-        for (String line : text) {
+        for (Component line : this.text) {
             final double newY = (order.equals(EHologramOrder.DESCENDING)) ? origin.getY() - offset : origin.getY() + offset;
             final ArmorStand as = (ArmorStand) Objects.requireNonNull(origin.getBukkitLocation().getWorld()).spawnEntity(
                     new PLocatable(origin.getWorldName(), origin.getX(), newY, origin.getZ(), origin.getYaw(), origin.getPitch()).getBukkitLocation(),
                     EntityType.ARMOR_STAND
             );
 
-            as.setCustomName(line);
+            as.customName(line);
             as.setInvisible(true);
             as.setCustomNameVisible(true);
             as.setGravity(false);
@@ -74,23 +71,23 @@ public final class Hologram {
 
     /**
      * Add a new line to this hologram
-     * @param newLine New text to be added
+     * @param newText New text to be added
      */
-    public void addLine(String newLine) {
+    public void addLine(Component newText) {
         final double newY = order.equals(EHologramOrder.DESCENDING) ? origin.getY() - (text.size()*0.3) : origin.getY() + (text.size()*0.3);
         final ArmorStand as = (ArmorStand) Objects.requireNonNull(origin.getBukkitLocation().getWorld()).spawnEntity(
                 new PLocatable(origin.getWorldName(), origin.getX(), newY, origin.getZ(), origin.getYaw(), origin.getPitch()).getBukkitLocation(),
                 EntityType.ARMOR_STAND
         );
 
-        as.setCustomName(ChatColor.translateAlternateColorCodes('&', newLine));
+        as.customName(newText);
         as.setCustomNameVisible(true);
         as.setGravity(false);
         as.setInvisible(true);
         as.setCollidable(false);
         as.getPersistentDataContainer().set(service.getNamespacedKey(), PersistentDataType.STRING, "hologram");
 
-        text.add(ChatColor.translateAlternateColorCodes('&', newLine));
+        text.add(newText);
     }
 
     /**
@@ -99,27 +96,26 @@ public final class Hologram {
      * @param newText New text to be added
      * @return True if update was performed
      */
-    public boolean updateLine(int index, String newText) {
+    public boolean updateLine(int index, Component newText) {
         if (index >= text.size()) {
             addLine(newText);
             return true;
         }
 
-        final String line = text.get(index);
+        final Component current = text.get(index);
         final double searchRadius = text.size()*0.3;
-        final String formatted = ChatColor.translateAlternateColorCodes('&', newText);
 
         for (Entity nearby : Objects.requireNonNull(origin.getBukkitLocation().getWorld()).getNearbyEntities(origin.getBukkitLocation(), 1.0, searchRadius, 1.0)) {
             if (!(nearby instanceof final ArmorStand as)) {
                 continue;
             }
 
-            if (as.getCustomName() == null || !as.getCustomName().equals(line)) {
+            if (as.customName() == null || !Objects.requireNonNull(as.customName()).equals(current)) {
                 continue;
             }
 
-            as.setCustomName(formatted);
-            text.set(index, formatted);
+            as.customName(newText);
+            text.set(index, newText);
             return true;
         }
 
@@ -136,7 +132,7 @@ public final class Hologram {
             return false;
         }
 
-        final String line = text.get(index);
+        final Component line = text.get(index);
         final double searchRadius = text.size()*0.3;
 
         for (Entity nearby : Objects.requireNonNull(origin.getBukkitLocation().getWorld()).getNearbyEntities(origin.getBukkitLocation(), 1.0, searchRadius, 1.0)) {
@@ -144,7 +140,7 @@ public final class Hologram {
                 continue;
             }
 
-            if (as.getCustomName() == null || !as.getCustomName().equals(line)) {
+            if (as.customName() == null || !Objects.requireNonNull(as.customName()).equals(line)) {
                 continue;
             }
 
