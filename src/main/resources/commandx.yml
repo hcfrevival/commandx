@@ -158,6 +158,6 @@ display:
   tablist:
     enabled: true
     header:
-      - '&4&lHardcore Factions'
+      - '<b><dark_red>Revival Network'
     footer:
-      - '&bplay.hcfrevival.net'
+      - '<dark_aqua>play.hcfrevival.net'

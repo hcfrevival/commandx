@@ -1,14 +1,12 @@
 package gg.hcfactions.cx.modules.display;
 
-import com.google.common.base.Joiner;
 import gg.hcfactions.cx.CXService;
 import gg.hcfactions.cx.modules.ICXModule;
 import gg.hcfactions.libs.bukkit.scheduler.Scheduler;
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.ChatColor;
+import net.kyori.adventure.text.Component;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -20,12 +18,14 @@ public final class TablistModule implements ICXModule, Listener {
     @Getter public final String key;
     @Getter @Setter public boolean enabled;
 
-    private String playerListHeader;
-    private String playerListFooter;
+    private Component playerListHeader;
+    private Component playerListFooter;
 
     public TablistModule(CXService service) {
         this.service = service;
         this.key = "display.tablist.";
+        this.playerListHeader = Component.empty();
+        this.playerListFooter = Component.empty();
     }
 
     @Override
@@ -55,8 +55,26 @@ public final class TablistModule implements ICXModule, Listener {
 
         final List<String> headerContent = conf.getStringList(getKey() + ".header");
         final List<String> footerContent = conf.getStringList(getKey() + ".footer");
-        playerListHeader = ChatColor.translateAlternateColorCodes('&', Joiner.on(ChatColor.RESET + "\n").join(headerContent));
-        playerListFooter = ChatColor.translateAlternateColorCodes('&', Joiner.on(ChatColor.RESET + "\n").join(footerContent));
+
+        for (int i = 0; i < headerContent.size(); i++) {
+            final String content = headerContent.get(i);
+
+            if (i != 0) {
+                playerListHeader = playerListHeader.appendNewline();
+            }
+
+            playerListHeader = playerListHeader.append(service.getPlugin().getMiniMessage().deserialize(content));
+        }
+
+        for (int i = 0; i < footerContent.size(); i++) {
+            final String content = footerContent.get(i);
+
+            if (i != 0) {
+                playerListFooter = playerListFooter.appendNewline();
+            }
+
+            playerListFooter = playerListFooter.append(service.getPlugin().getMiniMessage().deserialize(content));
+        }
     }
 
     @EventHandler
@@ -65,11 +83,8 @@ public final class TablistModule implements ICXModule, Listener {
             return;
         }
 
-        final Player player = event.getPlayer();
-
-        new Scheduler(getPlugin()).sync(() -> {
-            player.setPlayerListHeader(playerListHeader);
-            player.setPlayerListFooter(playerListFooter);
-        }).delay(10L).run();
+        new Scheduler(getPlugin()).sync(() ->
+                event.getPlayer().sendPlayerListHeaderAndFooter(playerListHeader, playerListFooter))
+        .delay(10L).run();
     }
 }
