@@ -56,7 +56,10 @@ public final class BroadcastManager {
         broadcastPrefix = service.getPlugin().getMiniMessage().deserialize(Objects.requireNonNull(conf.getString("prefix")));
         broadcastInterval = conf.getInt("interval");
 
-        unformatted.forEach(msg -> messageRepository.add(service.getPlugin().getMiniMessage().deserialize(msg)));
+        unformatted.forEach(msg -> {
+            Component component = Component.empty().appendNewline().append(service.getPlugin().getMiniMessage().deserialize(msg).appendNewline());
+            messageRepository.add(component);
+        });
 
         queuedMessages.addAll(messageRepository);
 
