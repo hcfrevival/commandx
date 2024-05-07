@@ -56,11 +56,7 @@ public final class BroadcastManager {
         broadcastPrefix = service.getPlugin().getMiniMessage().deserialize(Objects.requireNonNull(conf.getString("prefix")));
         broadcastInterval = conf.getInt("interval");
 
-        unformatted.forEach(msg -> {
-            Component component = Component.empty().appendNewline().append(service.getPlugin().getMiniMessage().deserialize(msg).appendNewline());
-            messageRepository.add(component);
-        });
-
+        unformatted.forEach(msg -> messageRepository.add(service.getPlugin().getMiniMessage().deserialize(msg)));
         queuedMessages.addAll(messageRepository);
 
         service.getPlugin().getAresLogger().info("Loaded {} Broadcasts", messageRepository.size());
@@ -92,7 +88,7 @@ public final class BroadcastManager {
                 final AresAccount cached = accountService.getCachedAccount(onlinePlayer.getUniqueId());
 
                 if (cached == null || cached.getSettings().isEnabled(AresAccount.Settings.SettingValue.BROADCASTS_ENABLED)) {
-                    onlinePlayer.sendMessage(broadcastPrefix.append(message));
+                    onlinePlayer.sendMessage(Component.newline().append(broadcastPrefix.append(message)).appendNewline());
                 }
             });
         }).repeat(broadcastInterval*20L, broadcastInterval*20L).run();
