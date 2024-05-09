@@ -5,9 +5,13 @@ import gg.hcfactions.cx.CXService;
 import gg.hcfactions.cx.modules.ICXModule;
 import lombok.Getter;
 import lombok.Setter;
+import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.damage.DamageSource;
+import org.bukkit.damage.DamageType;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -36,6 +40,9 @@ public class ItemModificationModule implements ICXModule, Listener {
     private double reduceAxeDamagePercent;
     private boolean milkExcludesInfiniteEffects;
     private boolean disableFireworkCrossbows;
+    private boolean reduceMaceDamage;
+    private double reduceMaceDamagePercent;
+    private double maxMaceDamage;
 
     public ItemModificationModule(CXService service) {
         this.service = service;
@@ -72,11 +79,42 @@ public class ItemModificationModule implements ICXModule, Listener {
         this.milkExcludesInfiniteEffects = conf.getBoolean(getKey() + "milk_excludes_infinite_effects");
         this.disableFireworkCrossbows = conf.getBoolean(getKey() + "disable_crossbow_fireworks");
         this.disableSpectralMultishot = conf.getBoolean(getKey() + "disable_spectral_multishot");
+        this.reduceMaceDamage = conf.getBoolean(getKey() + "reduce_mace_damage.enabled");
+        this.reduceMaceDamagePercent = conf.getDouble(getKey() + "reduce_mace_damage.reduction");
+        this.maxMaceDamage = conf.getDouble(getKey() + "reduce_mace_damage.max_damage");
     }
 
     @Override
     public void onReload() {
         loadConfig();
+    }
+
+    @EventHandler
+    public void onMaceNerf(EntityDamageByEntityEvent event) {
+        if (!isEnabled() || !reduceMaceDamage) {
+            return;
+        }
+
+        if (!(event.getDamager() instanceof final Player damager)) {
+            return;
+        }
+
+        final DamageSource damageSource = event.getDamageSource();
+        if (!damageSource.getDamageType().equals(DamageType.PLAYER_ATTACK)) {
+            return;
+        }
+
+        final ItemStack item = damager.getInventory().getItemInMainHand();
+        if (!item.getType().equals(Material.MACE)) {
+            return;
+        }
+
+        final double preDamage = event.getDamage();
+        final double postDamage = Math.min(preDamage*reduceMaceDamagePercent, maxMaceDamage);
+        event.setDamage(postDamage);
+
+        Bukkit.broadcast(Component.text("Pre Damage: " + preDamage));
+        Bukkit.broadcast(Component.text("Post Damage: " + postDamage));
     }
 
     @EventHandler
