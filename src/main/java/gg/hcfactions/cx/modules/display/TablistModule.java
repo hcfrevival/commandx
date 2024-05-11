@@ -24,8 +24,6 @@ public final class TablistModule implements ICXModule, Listener {
     public TablistModule(CXService service) {
         this.service = service;
         this.key = "display.tablist.";
-        this.playerListHeader = Component.empty();
-        this.playerListFooter = Component.empty();
     }
 
     @Override
@@ -55,6 +53,9 @@ public final class TablistModule implements ICXModule, Listener {
 
         final List<String> headerContent = conf.getStringList(getKey() + ".header");
         final List<String> footerContent = conf.getStringList(getKey() + ".footer");
+
+        this.playerListHeader = Component.empty();
+        this.playerListFooter = Component.empty();
 
         for (int i = 0; i < headerContent.size(); i++) {
             final String content = headerContent.get(i);
