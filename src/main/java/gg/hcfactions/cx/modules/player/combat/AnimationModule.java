@@ -7,6 +7,8 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.comphenix.protocol.wrappers.WrappedEnumEntityUseAction;
+import com.github.retrooper.packetevents.event.*;
+import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
 import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
 import gg.hcfactions.cx.CXService;
@@ -17,6 +19,7 @@ import gg.hcfactions.libs.bukkit.services.impl.account.AccountService;
 import gg.hcfactions.libs.bukkit.services.impl.account.model.AresAccount;
 import lombok.Getter;
 import lombok.Setter;
+import net.kyori.adventure.text.Component;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -34,10 +37,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.util.Objects;
-import java.util.Queue;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public final class AnimationModule implements ICXModule, Listener {
     @Getter public final CXService service;
@@ -68,11 +68,6 @@ public final class AnimationModule implements ICXModule, Listener {
 
     @Override
     public void onEnable() {
-        if (!getPlugin().isProtocolRegistered()) {
-            getPlugin().getAresLogger().error("failed to register animation module: protocollib not registered");
-            return;
-        }
-
         loadConfig();
 
         if (!enabled) {
@@ -80,7 +75,7 @@ public final class AnimationModule implements ICXModule, Listener {
             return;
         }
 
-        implPacketListener();
+        getPlugin().registerPacketListener(new PlayerAttackPacketListener(), PacketListenerPriority.LOW);
         implQueueTask();
 
         accountService = (AccountService)getPlugin().getService(AccountService.class);
@@ -152,11 +147,25 @@ public final class AnimationModule implements ICXModule, Listener {
         }).repeat(0L, 1L).run();
     }
 
+    /**
+     * @Deprecated
+     * We had a good thing going but you just had to go
+     * and fuck everything up @ProtocolLib
+     */
     private void implPacketListener() {
+
+
         getPlugin().getRegisteredProtocolManager().addPacketListener(new PacketAdapter(getPlugin(), ListenerPriority.LOWEST, PacketType.Play.Client.USE_ENTITY) {
             @Override
             public void onPacketReceiving(PacketEvent event) {
                 final PacketContainer packet = event.getPacket();
+
+                if (packet.getEntityUseActions() == null) {
+                    Bukkit.broadcast(Component.text("found null"));
+                }
+
+                Bukkit.broadcast(Component.text(packet.getEnumEntityUseActions().toString()));
+                packet.getEnumEntityUseActions();
                 final WrappedEnumEntityUseAction useAction = packet.getEnumEntityUseActions().read(0);
                 final EnumWrappers.EntityUseAction action = useAction.getAction();
                 final int entityId = packet.getIntegers().read(0);
@@ -427,6 +436,72 @@ public final class AnimationModule implements ICXModule, Listener {
                 player.sendMessage(ChatColor.AQUA + "set no damage ticks to " + ticks);
             }
         }).delay(1L).run();
+    }
+
+    public class PlayerAttackPacketListener implements PacketListener {
+        @Override
+        public void onPacketReceive(PacketReceiveEvent event) {
+            if (event.getPacketType() != com.github.retrooper.packetevents.protocol.packettype.PacketType.Play.Client.INTERACT_ENTITY) {
+                return;
+            }
+
+            WrapperPlayClientInteractEntity interactEntity = new WrapperPlayClientInteractEntity(event);
+            WrapperPlayClientInteractEntity.InteractAction action = interactEntity.getAction();
+
+            if (action != WrapperPlayClientInteractEntity.InteractAction.ATTACK) {
+                return;
+            }
+
+            int entityId = interactEntity.getEntityId();
+            Optional<? extends Player> playerQuery = Bukkit.getOnlinePlayers().stream().filter(p -> p.getEntityId() == entityId).findFirst();
+            if (playerQuery.isEmpty()) {
+                return;
+            }
+
+            Player attacker = Bukkit.getPlayer(event.getUser().getUUID());
+            Player attacked = playerQuery.get();
+
+            if (attacker == null) {
+                return;
+            }
+
+            if (!attacked.getGameMode().equals(GameMode.SURVIVAL) && !attacked.getGameMode().equals(GameMode.ADVENTURE)) {
+                return;
+            }
+
+            double hitDistance = attacker.getLocation().distanceSquared(attacked.getLocation());
+            if (hitDistance > (maxReach * maxReach)) {
+                return;
+            }
+
+            if (attacked.getHealth() <= 0 || attacked.isDead()) {
+                return;
+            }
+
+            // We only want to process like this for swords
+            if (!attacker.getInventory().getItemInMainHand().getType().name().endsWith("SWORD")) {
+                return;
+            }
+
+            event.setCancelled(true);
+
+            double initialDamage = Objects.requireNonNull(attacker.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE)).getValue();
+            boolean critical = false;
+
+            if (!((LivingEntity) attacker).isOnGround() && attacker.getVelocity().getY() < 0) {
+                initialDamage *= 1.25;
+                critical = true;
+            }
+
+            if (accountService != null) {
+                AresAccount aresAccount = accountService.getCachedAccount(attacker.getUniqueId());
+                if (aresAccount != null && aresAccount.getSettings().isEnabled(AresAccount.Settings.SettingValue.USE_NEW_CRIT_SOUND)) {
+                    attacker.playSound(attacked.getLocation(), Sound.ENTITY_PLAYER_ATTACK_CRIT, 1.0f, 1.0f);
+                }
+            }
+
+            queuedAttacks.add(new QueuedAttack(attacker, attacked, initialDamage, critical));
+        }
     }
 
     public record QueuedAttack(@Getter Player attacker,
