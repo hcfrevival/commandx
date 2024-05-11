@@ -113,8 +113,8 @@ public class ItemModificationModule implements ICXModule, Listener {
         final double postDamage = Math.min(preDamage*reduceMaceDamagePercent, maxMaceDamage);
         event.setDamage(postDamage);
 
-        Bukkit.broadcast(Component.text("Pre Damage: " + preDamage));
-        Bukkit.broadcast(Component.text("Post Damage: " + postDamage));
+        //Bukkit.broadcast(Component.text("Pre Damage: " + preDamage));
+        //Bukkit.broadcast(Component.text("Post Damage: " + postDamage));
     }
 
     @EventHandler
