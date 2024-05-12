@@ -159,11 +159,6 @@ public final class AnimationModule implements ICXModule, Listener {
             @Override
             public void onPacketReceiving(PacketEvent event) {
                 final PacketContainer packet = event.getPacket();
-
-                if (packet.getEntityUseActions() == null) {
-                    Bukkit.broadcast(Component.text("found null"));
-                }
-
                 Bukkit.broadcast(Component.text(packet.getEnumEntityUseActions().toString()));
                 packet.getEnumEntityUseActions();
                 final WrappedEnumEntityUseAction useAction = packet.getEnumEntityUseActions().read(0);
