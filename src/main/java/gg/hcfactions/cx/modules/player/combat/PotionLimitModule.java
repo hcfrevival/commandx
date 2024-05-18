@@ -70,6 +70,11 @@ public final class PotionLimitModule implements ICXModule, Listener {
 
         potionLimits.clear();
 
+        if (conf.getConfigurationSection(getKey() + "limits") == null) {
+            getPlugin().getAresLogger().warn("Potion limits could not be found. Skipping...");
+            return;
+        }
+
         for (String effectName : Objects.requireNonNull(conf.getConfigurationSection(getKey() + "limits")).getKeys(false)) {
             final PotionEffectType type = Effects.getEffectByName(effectName);
             final boolean disabled = conf.getBoolean(getKey() + "limits." + effectName + ".disabled");
