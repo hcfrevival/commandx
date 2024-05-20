@@ -3,12 +3,10 @@ package gg.hcfactions.cx.command;
 import gg.hcfactions.cx.CXPermissions;
 import gg.hcfactions.cx.CXService;
 import gg.hcfactions.libs.acf.BaseCommand;
-import gg.hcfactions.libs.acf.annotation.CommandAlias;
-import gg.hcfactions.libs.acf.annotation.CommandPermission;
-import gg.hcfactions.libs.acf.annotation.Description;
-import gg.hcfactions.libs.acf.annotation.Subcommand;
+import gg.hcfactions.libs.acf.annotation.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
@@ -20,15 +18,27 @@ public final class ReloadCommand extends BaseCommand {
     @Subcommand("debug")
     @Description("Enter debug mode")
     @CommandPermission(CXPermissions.CX_MOD)
-    public void onDebug(Player player) {
-        if (service.getAnimationModule().getDebugging().contains(player.getUniqueId())) {
-            service.getAnimationModule().getDebugging().remove(player.getUniqueId());
-            player.sendMessage(ChatColor.AQUA + "Left debug mode");
+    @CommandCompletion("@players")
+    public void onDebug(Player player, @Optional String username) {
+        Player toAdd = player;
+
+        if (username != null) {
+            toAdd = Bukkit.getPlayer(username);
+        }
+
+        if (toAdd == null) {
+            player.sendMessage(ChatColor.RED + "Invalid player");
             return;
         }
 
-        service.getAnimationModule().getDebugging().add(player.getUniqueId());
-        player.sendMessage(ChatColor.AQUA + "Entered debug mode");
+        if (service.getAnimationModule().getDebugging().contains(toAdd.getUniqueId())) {
+            service.getAnimationModule().getDebugging().remove(toAdd.getUniqueId());
+            toAdd.sendMessage(ChatColor.AQUA + "Left debug mode");
+            return;
+        }
+
+        service.getAnimationModule().getDebugging().add(toAdd.getUniqueId());
+        toAdd.sendMessage(ChatColor.AQUA + "Entered debug mode");
     }
 
     @Subcommand("reload all")

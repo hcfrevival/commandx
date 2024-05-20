@@ -461,15 +461,27 @@ public final class AnimationModule implements ICXModule, Listener {
             }
 
             if (!attacked.getGameMode().equals(GameMode.SURVIVAL) && !attacked.getGameMode().equals(GameMode.ADVENTURE)) {
+                if (debugging.contains(attacker.getUniqueId())) {
+                    attacker.sendMessage(ChatColor.RED + "DEBUG: skipped damage (invalid gamemode)");
+                }
+
                 return;
             }
 
             double hitDistance = attacker.getLocation().distanceSquared(attacked.getLocation());
             if (hitDistance > (maxReach * maxReach)) {
+                if (debugging.contains(attacker.getUniqueId())) {
+                    attacker.sendMessage(ChatColor.RED + "DEBUG: skipped damage (invalid hit dist, " + hitDistance + " > " + (maxReach * maxReach) + ")");
+                }
+
                 return;
             }
 
             if (attacked.getHealth() <= 0 || attacked.isDead()) {
+                if (debugging.contains(attacker.getUniqueId())) {
+                    attacker.sendMessage(ChatColor.RED + "DEBUG: skipped damage (damaged is dead)");
+                }
+
                 return;
             }
 
@@ -493,6 +505,10 @@ public final class AnimationModule implements ICXModule, Listener {
                 if (aresAccount != null && aresAccount.getSettings().isEnabled(AresAccount.Settings.SettingValue.USE_NEW_CRIT_SOUND)) {
                     attacker.playSound(attacked.getLocation(), Sound.ENTITY_PLAYER_ATTACK_CRIT, 1.0f, 1.0f);
                 }
+            }
+
+            if (debugging.contains(attacker.getUniqueId())) {
+                attacker.sendMessage(ChatColor.YELLOW + "hit queued");
             }
 
             queuedAttacks.add(new QueuedAttack(attacker, attacked, initialDamage, critical));
