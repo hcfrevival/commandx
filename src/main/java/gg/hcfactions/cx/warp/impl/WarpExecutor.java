@@ -7,6 +7,8 @@ import gg.hcfactions.libs.base.consumer.Promise;
 import gg.hcfactions.libs.bukkit.location.impl.BLocatable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.bukkit.ChatColor;
@@ -57,23 +59,17 @@ public final class WarpExecutor implements IWarpExecutor {
             return;
         }
 
-        player.sendMessage(ChatColor.GOLD + "Warp List (" + ChatColor.YELLOW + manager.getWarpRepository().size() + ChatColor.GOLD + ")");
+        player.sendMessage(Component.text("Warp List", NamedTextColor.GOLD)
+                .appendSpace().append(Component.text("(" + manager.getWarpRepository().size() + " available)", NamedTextColor.DARK_AQUA)));
 
-        manager.getWarpRepository().forEach(w -> player.spigot().sendMessage(
-                new ComponentBuilder(" ")
-                        .color(net.md_5.bungee.api.ChatColor.RESET)
-                        .append(" - ")
-                        .color(net.md_5.bungee.api.ChatColor.YELLOW)
-                        .append(w.getName() + " ")
-                        .color(net.md_5.bungee.api.ChatColor.YELLOW)
-                        .append("[")
-                        .color(net.md_5.bungee.api.ChatColor.GOLD)
-                        .append(w.toString())
-                        .color(net.md_5.bungee.api.ChatColor.BLUE)
-                        .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/warp " + w.getName()))
-                        .append("]")
-                        .color(net.md_5.bungee.api.ChatColor.GOLD)
-                        .create()));
+        manager.getWarpRepository().forEach(w -> {
+            Component component = Component.text("-")
+                    .appendSpace().append(Component.text(w.getName(), NamedTextColor.GOLD)
+                            .hoverEvent(Component.text("Click to teleport")
+                            .clickEvent(net.kyori.adventure.text.event.ClickEvent.runCommand("/warp " + w.getName()))));
+
+            player.sendMessage(component);
+        });
     }
 
     @Override
