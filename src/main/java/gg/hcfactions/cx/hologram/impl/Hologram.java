@@ -6,6 +6,7 @@ import gg.hcfactions.cx.hologram.EHologramOrder;
 import gg.hcfactions.libs.bukkit.location.impl.PLocatable;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -104,13 +105,20 @@ public final class Hologram {
 
         final Component current = text.get(index);
         final double searchRadius = text.size()*0.3;
+        String currentName = PlainTextComponentSerializer.plainText().serialize(current);
 
         for (Entity nearby : Objects.requireNonNull(origin.getBukkitLocation().getWorld()).getNearbyEntities(origin.getBukkitLocation(), 1.0, searchRadius, 1.0)) {
             if (!(nearby instanceof final ArmorStand as)) {
                 continue;
             }
 
-            if (as.customName() == null || !Objects.requireNonNull(as.customName()).equals(current)) {
+            if (as.customName() == null) {
+                continue;
+            }
+
+            String nearbyName = PlainTextComponentSerializer.plainText().serialize(Objects.requireNonNull(as.customName()));
+
+            if (!nearbyName.equals(currentName)) {
                 continue;
             }
 
@@ -134,13 +142,20 @@ public final class Hologram {
 
         final Component line = text.get(index);
         final double searchRadius = text.size()*0.3;
+        String lineText = PlainTextComponentSerializer.plainText().serialize(line);
 
         for (Entity nearby : Objects.requireNonNull(origin.getBukkitLocation().getWorld()).getNearbyEntities(origin.getBukkitLocation(), 1.0, searchRadius, 1.0)) {
             if (!(nearby instanceof final ArmorStand as)) {
                 continue;
             }
 
-            if (as.customName() == null || !Objects.requireNonNull(as.customName()).equals(line)) {
+            if (as.customName() == null) {
+                continue;
+            }
+
+            String nearbyText = PlainTextComponentSerializer.plainText().serialize(Objects.requireNonNull(as.customName()));
+
+            if (!nearbyText.equals(lineText)) {
                 continue;
             }
 
