@@ -34,6 +34,7 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -54,6 +55,7 @@ public final class AnimationModule implements ICXModule, Listener {
     private final Queue<QueuedAttack> queuedAttacks;
     private final Set<UUID> recentlyTakenProjectileDamage;
     private final Set<UUID> recentlyTakenTickDamage;
+    private final Set<UUID> recentlyUsedEnderpearl;
 
     public AnimationModule(CXService service) {
         this.service = service;
@@ -63,6 +65,7 @@ public final class AnimationModule implements ICXModule, Listener {
         this.queuedAttacks = Queues.newConcurrentLinkedQueue();
         this.recentlyTakenProjectileDamage = Sets.newConcurrentHashSet();
         this.recentlyTakenTickDamage = Sets.newConcurrentHashSet();
+        this.recentlyUsedEnderpearl = Sets.newConcurrentHashSet();
         this.debugging = Sets.newConcurrentHashSet();
     }
 
@@ -381,6 +384,31 @@ public final class AnimationModule implements ICXModule, Listener {
         new Scheduler(getPlugin()).sync(() -> player.setNoDamageTicks(preDamageTicks - 1)).run();
     }
 
+    /**
+     * Listens for when a player and temporarily
+     * caches them so we can apply noDamageTicks
+     * accordingly.
+     * @param event Bukkit PlayerTeleportEvent
+     */
+    @EventHandler
+    public void onPlayerEnderpearl(PlayerTeleportEvent event) {
+        if (!isEnabled()) {
+            return;
+        }
+
+        if (event.isCancelled()) {
+            return;
+        }
+
+        if (!event.getCause().equals(PlayerTeleportEvent.TeleportCause.ENDER_PEARL)) {
+            return;
+        }
+
+        final UUID uuid = event.getPlayer().getUniqueId();
+        recentlyUsedEnderpearl.add(uuid);
+        new Scheduler(service.getPlugin()).sync(() -> recentlyUsedEnderpearl.remove(uuid)).delay(5L).run();
+    }
+
     @EventHandler (priority = EventPriority.MONITOR)
     public void onNoDamageTickApplied(EntityDamageEvent event) {
         if (!(event.getEntity() instanceof final Player player)) {
@@ -389,6 +417,7 @@ public final class AnimationModule implements ICXModule, Listener {
 
         final UUID uniqueId = player.getUniqueId();
         final EntityDamageEvent.DamageCause cause = event.getCause();
+        final boolean isEnderpearlDamage = (cause.equals(EntityDamageEvent.DamageCause.FALL) && recentlyUsedEnderpearl.contains(player.getUniqueId()));
         final boolean isTickingCause = cause.equals(EntityDamageEvent.DamageCause.POISON)
                 || cause.equals(EntityDamageEvent.DamageCause.FIRE)
                 || cause.equals(EntityDamageEvent.DamageCause.LAVA)
@@ -413,7 +442,7 @@ public final class AnimationModule implements ICXModule, Listener {
             return;
         }
 
-        final int ticks = (isTickingCause) ? 0 : noDamageTicks;
+        final int ticks = (isTickingCause || isEnderpearlDamage) ? 0 : noDamageTicks;
 
         if (isTickingCause) {
             if (debugging.contains(player.getUniqueId())) {
