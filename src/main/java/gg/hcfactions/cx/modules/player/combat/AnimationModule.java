@@ -500,7 +500,7 @@ public final class AnimationModule implements ICXModule, Listener {
                 critical = true;
             }
 
-            if (accountService != null) {
+            if (critical && accountService != null) {
                 AresAccount aresAccount = accountService.getCachedAccount(attacker.getUniqueId());
                 if (aresAccount != null && aresAccount.getSettings().isEnabled(AresAccount.Settings.SettingValue.USE_NEW_CRIT_SOUND)) {
                     attacker.playSound(attacked.getLocation(), Sound.ENTITY_PLAYER_ATTACK_CRIT, 1.0f, 1.0f);
