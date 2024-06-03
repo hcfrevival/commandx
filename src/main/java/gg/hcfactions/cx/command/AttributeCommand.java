@@ -14,7 +14,7 @@ import org.bukkit.entity.Player;
 
 @AllArgsConstructor
 @CommandAlias("attr")
-public class AttributeCommand extends BaseCommand {
+public final class AttributeCommand extends BaseCommand {
     @Getter public final CXService service;
 
     @Subcommand("scale")
