@@ -14,6 +14,9 @@ import gg.hcfactions.libs.bukkit.utils.Enchants;
 import gg.hcfactions.libs.bukkit.utils.Players;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.*;
 import org.bukkit.command.CommandSender;
@@ -80,20 +83,22 @@ public final class EssentialCommand extends BaseCommand {
         final ItemStack hand = player.getInventory().getItemInMainHand();
 
         if (hand.getType().equals(Material.AIR)) {
-            player.sendMessage(ChatColor.RED + "You are not holding an item");
+            player.sendMessage(Component.text("You are not holding an item", NamedTextColor.RED));
             return;
         }
 
         final ItemMeta meta = hand.getItemMeta();
         if (meta == null) {
-            player.sendMessage(ChatColor.RED + "Item does not have any meta data");
+            player.sendMessage(Component.text("Item does not have any metadata", NamedTextColor.RED));
             return;
         }
 
-        meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', name));
+        Component deserializedName = service.getPlugin().getMiniMessage().deserialize(name).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE);
+        meta.displayName(deserializedName);
         hand.setItemMeta(meta);
 
-        player.sendMessage(ChatColor.YELLOW + "Item has been renamed to " + ChatColor.translateAlternateColorCodes('&', name));
+        player.sendMessage(Component.text("Item has been renamed to")
+                .appendSpace().append(deserializedName));
     }
 
     @CommandAlias("repair")
