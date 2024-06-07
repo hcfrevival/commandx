@@ -6,12 +6,12 @@ import gg.hcfactions.cx.modules.ICXModule;
 import lombok.Getter;
 import lombok.Setter;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.damage.DamageSource;
 import org.bukkit.damage.DamageType;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -149,7 +149,7 @@ public class ItemModificationModule implements ICXModule, Listener {
         final Player player = event.getPlayer();
         final ItemStack item = event.getOffHandItem();
 
-        if (item == null || !item.getType().equals(Material.SHIELD)) {
+        if (!item.getType().equals(Material.SHIELD)) {
             return;
         }
 
@@ -171,20 +171,30 @@ public class ItemModificationModule implements ICXModule, Listener {
             return;
         }
 
+        final ItemStack bow = event.getBow();
         final ItemStack consumable = event.getConsumable();
 
         if (consumable == null) {
             return;
         }
 
-        if (disableFireworkCrossbows && consumable.getType().equals(Material.FIREWORK_ROCKET)) {
-            player.sendMessage(ChatColor.RED + "Fireworks launched by Crossbows are disabled");
+        if (
+                disableFireworkCrossbows
+                && consumable.getType().equals(Material.FIREWORK_ROCKET)
+                && bow != null && bow.getType().equals(Material.CROSSBOW)
+        ) {
+            player.sendMessage(Component.text("Fireworks can not be launched by Crossbows"));
             event.setCancelled(true);
             return;
         }
 
-        if (disableSpectralMultishot && consumable.getType().equals(Material.SPECTRAL_ARROW)) {
-            player.sendMessage(ChatColor.RED + "Spectral Arrows launched by Crossbows are disabled");
+        if (
+                disableSpectralMultishot
+                && consumable.getType().equals(Material.SPECTRAL_ARROW)
+                && bow != null && bow.getType().equals(Material.CROSSBOW)
+                && bow.getItemMeta().hasEnchant(Enchantment.MULTISHOT)
+        ) {
+            player.sendMessage(Component.text("Spectral Arrows can not be launched by Crossbows with Multishot"));
             event.setCancelled(true);
         }
     }
