@@ -5,7 +5,9 @@ import gg.hcfactions.cx.CXService;
 import gg.hcfactions.cx.warp.impl.Warp;
 import gg.hcfactions.cx.warp.impl.WarpExecutor;
 import gg.hcfactions.cx.warp.impl.WarpGateway;
+import gg.hcfactions.libs.base.consumer.UnsafePromise;
 import gg.hcfactions.libs.bukkit.location.impl.BLocatable;
+import gg.hcfactions.libs.bukkit.scheduler.Scheduler;
 import lombok.Getter;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
@@ -15,6 +17,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public final class WarpManager {
@@ -35,6 +39,30 @@ public final class WarpManager {
 
     public Optional<Warp> getWarp(String warpName) {
         return warpRepository.stream().filter(w -> w.getName().equalsIgnoreCase(warpName)).findFirst();
+    }
+
+    public void getWarpGateway(Block block, UnsafePromise<WarpGateway> promise) {
+        int x = block.getX();
+        int y = block.getY();
+        int z = block.getZ();
+        String world = block.getWorld().getName();
+
+        new Scheduler(service.getPlugin()).async(() -> {
+            Optional<WarpGateway> query = gatewayRepository.stream().filter(w ->
+                    w.getBlock().getX() == x
+                            && w.getBlock().getY() == y
+                            && w.getBlock().getZ() == z
+                            && w.getBlock().getWorldName().equalsIgnoreCase(world)
+            ).findFirst();
+
+            new Scheduler(service.getPlugin()).sync(() -> {
+                if (query.isEmpty()) {
+                    return;
+                }
+
+                promise.accept(query.get());
+            }).run();
+        }).run();
     }
 
     public Optional<WarpGateway> getGateway(Block block) {
