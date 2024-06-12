@@ -65,8 +65,6 @@ public final class WarpGatewayListener implements Listener {
         final Player player = event.getPlayer();
         final UUID uniqueId = player.getUniqueId();
 
-        event.setCancelled(true);
-
         service.getWarpManager().getWarpGateway(event.getTo().getBlock(), warpGateway -> {
             if (recentlyTeleported.contains(uniqueId)) {
                 player.sendMessage(Component.text("Gateway cooling down...", NamedTextColor.RED));
