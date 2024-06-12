@@ -5,9 +5,13 @@ import gg.hcfactions.cx.CXService;
 import gg.hcfactions.cx.modules.ICXModule;
 import lombok.Getter;
 import lombok.Setter;
+import net.kyori.adventure.text.Component;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.damage.DamageSource;
+import org.bukkit.damage.DamageType;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -36,6 +40,9 @@ public class ItemModificationModule implements ICXModule, Listener {
     private double reduceAxeDamagePercent;
     private boolean milkExcludesInfiniteEffects;
     private boolean disableFireworkCrossbows;
+    private boolean reduceMaceDamage;
+    private double reduceMaceDamagePercent;
+    private double maxMaceDamage;
 
     public ItemModificationModule(CXService service) {
         this.service = service;
@@ -72,11 +79,42 @@ public class ItemModificationModule implements ICXModule, Listener {
         this.milkExcludesInfiniteEffects = conf.getBoolean(getKey() + "milk_excludes_infinite_effects");
         this.disableFireworkCrossbows = conf.getBoolean(getKey() + "disable_crossbow_fireworks");
         this.disableSpectralMultishot = conf.getBoolean(getKey() + "disable_spectral_multishot");
+        this.reduceMaceDamage = conf.getBoolean(getKey() + "reduce_mace_damage.enabled");
+        this.reduceMaceDamagePercent = conf.getDouble(getKey() + "reduce_mace_damage.reduction");
+        this.maxMaceDamage = conf.getDouble(getKey() + "reduce_mace_damage.max_damage");
     }
 
     @Override
     public void onReload() {
         loadConfig();
+    }
+
+    @EventHandler
+    public void onMaceNerf(EntityDamageByEntityEvent event) {
+        if (!isEnabled() || !reduceMaceDamage) {
+            return;
+        }
+
+        if (!(event.getDamager() instanceof final Player damager)) {
+            return;
+        }
+
+        final DamageSource damageSource = event.getDamageSource();
+        if (!damageSource.getDamageType().equals(DamageType.PLAYER_ATTACK)) {
+            return;
+        }
+
+        final ItemStack item = damager.getInventory().getItemInMainHand();
+        if (!item.getType().equals(Material.MACE)) {
+            return;
+        }
+
+        final double preDamage = event.getDamage();
+        final double postDamage = Math.min(preDamage*reduceMaceDamagePercent, maxMaceDamage);
+        event.setDamage(postDamage);
+
+        //Bukkit.broadcast(Component.text("Pre Damage: " + preDamage));
+        //Bukkit.broadcast(Component.text("Post Damage: " + postDamage));
     }
 
     @EventHandler
@@ -111,7 +149,7 @@ public class ItemModificationModule implements ICXModule, Listener {
         final Player player = event.getPlayer();
         final ItemStack item = event.getOffHandItem();
 
-        if (item == null || !item.getType().equals(Material.SHIELD)) {
+        if (!item.getType().equals(Material.SHIELD)) {
             return;
         }
 
@@ -133,20 +171,30 @@ public class ItemModificationModule implements ICXModule, Listener {
             return;
         }
 
+        final ItemStack bow = event.getBow();
         final ItemStack consumable = event.getConsumable();
 
         if (consumable == null) {
             return;
         }
 
-        if (disableFireworkCrossbows && consumable.getType().equals(Material.FIREWORK_ROCKET)) {
-            player.sendMessage(ChatColor.RED + "Fireworks launched by Crossbows are disabled");
+        if (
+                disableFireworkCrossbows
+                && consumable.getType().equals(Material.FIREWORK_ROCKET)
+                && bow != null && bow.getType().equals(Material.CROSSBOW)
+        ) {
+            player.sendMessage(Component.text("Fireworks can not be launched by Crossbows"));
             event.setCancelled(true);
             return;
         }
 
-        if (disableSpectralMultishot && consumable.getType().equals(Material.SPECTRAL_ARROW)) {
-            player.sendMessage(ChatColor.RED + "Spectral Arrows launched by Crossbows are disabled");
+        if (
+                disableSpectralMultishot
+                && consumable.getType().equals(Material.SPECTRAL_ARROW)
+                && bow != null && bow.getType().equals(Material.CROSSBOW)
+                && bow.getItemMeta().hasEnchant(Enchantment.MULTISHOT)
+        ) {
+            player.sendMessage(Component.text("Spectral Arrows can not be launched by Crossbows with Multishot"));
             event.setCancelled(true);
         }
     }

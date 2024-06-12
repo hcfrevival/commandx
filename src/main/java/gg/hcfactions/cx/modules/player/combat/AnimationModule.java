@@ -7,6 +7,8 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.comphenix.protocol.wrappers.WrappedEnumEntityUseAction;
+import com.github.retrooper.packetevents.event.*;
+import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
 import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
 import gg.hcfactions.cx.CXService;
@@ -17,6 +19,7 @@ import gg.hcfactions.libs.bukkit.services.impl.account.AccountService;
 import gg.hcfactions.libs.bukkit.services.impl.account.model.AresAccount;
 import lombok.Getter;
 import lombok.Setter;
+import net.kyori.adventure.text.Component;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -31,13 +34,11 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.util.Objects;
-import java.util.Queue;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public final class AnimationModule implements ICXModule, Listener {
     @Getter public final CXService service;
@@ -54,6 +55,7 @@ public final class AnimationModule implements ICXModule, Listener {
     private final Queue<QueuedAttack> queuedAttacks;
     private final Set<UUID> recentlyTakenProjectileDamage;
     private final Set<UUID> recentlyTakenTickDamage;
+    private final Set<UUID> recentlyUsedEnderpearl;
 
     public AnimationModule(CXService service) {
         this.service = service;
@@ -63,16 +65,12 @@ public final class AnimationModule implements ICXModule, Listener {
         this.queuedAttacks = Queues.newConcurrentLinkedQueue();
         this.recentlyTakenProjectileDamage = Sets.newConcurrentHashSet();
         this.recentlyTakenTickDamage = Sets.newConcurrentHashSet();
+        this.recentlyUsedEnderpearl = Sets.newConcurrentHashSet();
         this.debugging = Sets.newConcurrentHashSet();
     }
 
     @Override
     public void onEnable() {
-        if (!getPlugin().isProtocolRegistered()) {
-            getPlugin().getAresLogger().error("failed to register animation module: protocollib not registered");
-            return;
-        }
-
         loadConfig();
 
         if (!enabled) {
@@ -80,7 +78,7 @@ public final class AnimationModule implements ICXModule, Listener {
             return;
         }
 
-        implPacketListener();
+        getPlugin().registerPacketListener(new PlayerAttackPacketListener(), PacketListenerPriority.LOW);
         implQueueTask();
 
         accountService = (AccountService)getPlugin().getService(AccountService.class);
@@ -152,11 +150,20 @@ public final class AnimationModule implements ICXModule, Listener {
         }).repeat(0L, 1L).run();
     }
 
+    /**
+     * @Deprecated
+     * We had a good thing going but you just had to go
+     * and fuck everything up @ProtocolLib
+     */
     private void implPacketListener() {
+
+
         getPlugin().getRegisteredProtocolManager().addPacketListener(new PacketAdapter(getPlugin(), ListenerPriority.LOWEST, PacketType.Play.Client.USE_ENTITY) {
             @Override
             public void onPacketReceiving(PacketEvent event) {
                 final PacketContainer packet = event.getPacket();
+                Bukkit.broadcast(Component.text(packet.getEnumEntityUseActions().toString()));
+                packet.getEnumEntityUseActions();
                 final WrappedEnumEntityUseAction useAction = packet.getEnumEntityUseActions().read(0);
                 final EnumWrappers.EntityUseAction action = useAction.getAction();
                 final int entityId = packet.getIntegers().read(0);
@@ -377,6 +384,31 @@ public final class AnimationModule implements ICXModule, Listener {
         new Scheduler(getPlugin()).sync(() -> player.setNoDamageTicks(preDamageTicks - 1)).run();
     }
 
+    /**
+     * Listens for when a player and temporarily
+     * caches them so we can apply noDamageTicks
+     * accordingly.
+     * @param event Bukkit PlayerTeleportEvent
+     */
+    @EventHandler
+    public void onPlayerEnderpearl(PlayerTeleportEvent event) {
+        if (!isEnabled()) {
+            return;
+        }
+
+        if (event.isCancelled()) {
+            return;
+        }
+
+        if (!event.getCause().equals(PlayerTeleportEvent.TeleportCause.ENDER_PEARL)) {
+            return;
+        }
+
+        final UUID uuid = event.getPlayer().getUniqueId();
+        recentlyUsedEnderpearl.add(uuid);
+        new Scheduler(service.getPlugin()).sync(() -> recentlyUsedEnderpearl.remove(uuid)).delay(5L).run();
+    }
+
     @EventHandler (priority = EventPriority.MONITOR)
     public void onNoDamageTickApplied(EntityDamageEvent event) {
         if (!(event.getEntity() instanceof final Player player)) {
@@ -385,6 +417,7 @@ public final class AnimationModule implements ICXModule, Listener {
 
         final UUID uniqueId = player.getUniqueId();
         final EntityDamageEvent.DamageCause cause = event.getCause();
+        final boolean isEnderpearlDamage = (cause.equals(EntityDamageEvent.DamageCause.FALL) && recentlyUsedEnderpearl.contains(player.getUniqueId()));
         final boolean isTickingCause = cause.equals(EntityDamageEvent.DamageCause.POISON)
                 || cause.equals(EntityDamageEvent.DamageCause.FIRE)
                 || cause.equals(EntityDamageEvent.DamageCause.LAVA)
@@ -409,7 +442,7 @@ public final class AnimationModule implements ICXModule, Listener {
             return;
         }
 
-        final int ticks = (isTickingCause) ? 0 : noDamageTicks;
+        final int ticks = (isTickingCause || isEnderpearlDamage) ? 0 : noDamageTicks;
 
         if (isTickingCause) {
             if (debugging.contains(player.getUniqueId())) {
@@ -427,6 +460,88 @@ public final class AnimationModule implements ICXModule, Listener {
                 player.sendMessage(ChatColor.AQUA + "set no damage ticks to " + ticks);
             }
         }).delay(1L).run();
+    }
+
+    public class PlayerAttackPacketListener implements PacketListener {
+        @Override
+        public void onPacketReceive(PacketReceiveEvent event) {
+            if (event.getPacketType() != com.github.retrooper.packetevents.protocol.packettype.PacketType.Play.Client.INTERACT_ENTITY) {
+                return;
+            }
+
+            WrapperPlayClientInteractEntity interactEntity = new WrapperPlayClientInteractEntity(event);
+            WrapperPlayClientInteractEntity.InteractAction action = interactEntity.getAction();
+
+            if (action != WrapperPlayClientInteractEntity.InteractAction.ATTACK) {
+                return;
+            }
+
+            int entityId = interactEntity.getEntityId();
+            Optional<? extends Player> playerQuery = Bukkit.getOnlinePlayers().stream().filter(p -> p.getEntityId() == entityId).findFirst();
+            if (playerQuery.isEmpty()) {
+                return;
+            }
+
+            Player attacker = Bukkit.getPlayer(event.getUser().getUUID());
+            Player attacked = playerQuery.get();
+
+            if (attacker == null) {
+                return;
+            }
+
+            if (!attacked.getGameMode().equals(GameMode.SURVIVAL) && !attacked.getGameMode().equals(GameMode.ADVENTURE)) {
+                if (debugging.contains(attacker.getUniqueId())) {
+                    attacker.sendMessage(ChatColor.RED + "DEBUG: skipped damage (invalid gamemode)");
+                }
+
+                return;
+            }
+
+            double hitDistance = attacker.getLocation().distanceSquared(attacked.getLocation());
+            if (hitDistance > (maxReach * maxReach)) {
+                if (debugging.contains(attacker.getUniqueId())) {
+                    attacker.sendMessage(ChatColor.RED + "DEBUG: skipped damage (invalid hit dist, " + hitDistance + " > " + (maxReach * maxReach) + ")");
+                }
+
+                return;
+            }
+
+            if (attacked.getHealth() <= 0 || attacked.isDead()) {
+                if (debugging.contains(attacker.getUniqueId())) {
+                    attacker.sendMessage(ChatColor.RED + "DEBUG: skipped damage (damaged is dead)");
+                }
+
+                return;
+            }
+
+            // We only want to process like this for swords
+            if (!attacker.getInventory().getItemInMainHand().getType().name().endsWith("SWORD")) {
+                return;
+            }
+
+            event.setCancelled(true);
+
+            double initialDamage = Objects.requireNonNull(attacker.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE)).getValue();
+            boolean critical = false;
+
+            if (!((LivingEntity) attacker).isOnGround() && attacker.getVelocity().getY() < 0) {
+                initialDamage *= 1.25;
+                critical = true;
+            }
+
+            if (critical && accountService != null) {
+                AresAccount aresAccount = accountService.getCachedAccount(attacker.getUniqueId());
+                if (aresAccount != null && aresAccount.getSettings().isEnabled(AresAccount.Settings.SettingValue.USE_NEW_CRIT_SOUND)) {
+                    attacker.playSound(attacked.getLocation(), Sound.ENTITY_PLAYER_ATTACK_CRIT, 1.0f, 1.0f);
+                }
+            }
+
+            if (debugging.contains(attacker.getUniqueId())) {
+                attacker.sendMessage(ChatColor.YELLOW + "hit queued");
+            }
+
+            queuedAttacks.add(new QueuedAttack(attacker, attacked, initialDamage, critical));
+        }
     }
 
     public record QueuedAttack(@Getter Player attacker,

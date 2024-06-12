@@ -77,6 +77,10 @@ items:
     reduce_trident_damage:
       enabled: true
       reduction: 0.5
+    reduce_mace_damage:
+      enabled: true
+      reduction: 0.25
+      max_damage: 30.0
 combat:
   potion_precision:
     enabled: true
@@ -158,6 +162,6 @@ display:
   tablist:
     enabled: true
     header:
-      - '&4&lHardcore Factions'
+      - '<b><dark_red>Revival Network'
     footer:
-      - '&bplay.hcfrevival.net'
+      - '<dark_aqua>play.hcfrevival.net'

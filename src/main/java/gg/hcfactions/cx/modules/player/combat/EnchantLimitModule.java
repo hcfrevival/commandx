@@ -66,6 +66,11 @@ public final class EnchantLimitModule implements ICXModule, Listener {
 
         enchantLimits.clear();
 
+        if (conf.getConfigurationSection(getKey() + "limits") == null) {
+            getPlugin().getAresLogger().warn("Could not find any Enchantment Limits. Skipping...");
+            return;
+        }
+
         this.enabled = conf.getBoolean(getKey() + "enabled");
 
         for (String enchantmentName : Objects.requireNonNull(conf.getConfigurationSection(getKey() + "limits")).getKeys(false)) {

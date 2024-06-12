@@ -1,5 +1,6 @@
 package gg.hcfactions.cx;
 
+import com.github.retrooper.packetevents.PacketEvents;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import gg.hcfactions.cx.attributes.AttributeManager;
@@ -207,7 +208,7 @@ public final class CXService implements IAresService {
         entityDropModule = (EntityDropModule) registerModule(new EntityDropModule(this));
         potionPrecisionModule = (PotionPrecisionModule) registerModule(new PotionPrecisionModule(this));
 
-        if (plugin.isProtocolRegistered()) {
+        if (PacketEvents.getAPI().isLoaded()) {
             animationModule = (AnimationModule) registerModule(new AnimationModule(this));
         }
 

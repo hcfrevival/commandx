@@ -5,9 +5,13 @@ import com.google.common.collect.Sets;
 import gg.hcfactions.cx.CXPermissions;
 import gg.hcfactions.cx.CXService;
 import gg.hcfactions.cx.warp.impl.WarpGateway;
+import gg.hcfactions.libs.base.consumer.FailablePromise;
+import gg.hcfactions.libs.base.consumer.UnsafePromise;
 import gg.hcfactions.libs.bukkit.events.impl.PlayerBigMoveEvent;
 import gg.hcfactions.libs.bukkit.scheduler.Scheduler;
 import lombok.Getter;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -38,17 +42,15 @@ public final class WarpGatewayListener implements Listener {
         final UUID uniqueId = event.getPlayer().getUniqueId();
         final Player player = event.getPlayer();
 
-        service.getWarpManager().getGateway(block).ifPresent(gateway -> {
-            event.setCancelled(true);
+        event.setCancelled(true);
 
+        service.getWarpManager().getWarpGateway(block, warpGateway -> {
             if (recentlyTeleported.contains(uniqueId)) {
-                player.sendMessage(ChatColor.RED + "Gateway cooling down...");
-                event.setCancelled(true);
+                player.sendMessage(Component.text("Gateway cooling down...", NamedTextColor.RED));
                 return;
             }
 
-            gateway.teleport(event.getPlayer());
-
+            warpGateway.teleport(event.getPlayer());
             recentlyTeleported.add(uniqueId);
             new Scheduler(service.getPlugin()).sync(() -> recentlyTeleported.remove(uniqueId)).delay(10 * 20L).run();
         });
@@ -63,16 +65,14 @@ public final class WarpGatewayListener implements Listener {
         final Player player = event.getPlayer();
         final UUID uniqueId = player.getUniqueId();
 
-        service.getWarpManager().getGateway(event.getTo().getBlock()).ifPresent(gateway -> {
+        service.getWarpManager().getWarpGateway(event.getTo().getBlock(), warpGateway -> {
             if (recentlyTeleported.contains(uniqueId)) {
-                player.sendMessage(ChatColor.RED + "Gateway cooling down...");
-                event.setCancelled(true);
+                player.sendMessage(Component.text("Gateway cooling down...", NamedTextColor.RED));
                 return;
             }
 
-            gateway.teleport(player);
+            warpGateway.teleport(event.getPlayer());
             recentlyTeleported.add(uniqueId);
-
             new Scheduler(service.getPlugin()).sync(() -> recentlyTeleported.remove(uniqueId)).delay(10 * 20L).run();
         });
     }

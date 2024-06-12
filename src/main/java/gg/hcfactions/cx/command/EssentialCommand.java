@@ -14,6 +14,9 @@ import gg.hcfactions.libs.bukkit.utils.Enchants;
 import gg.hcfactions.libs.bukkit.utils.Players;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.*;
 import org.bukkit.command.CommandSender;
@@ -27,9 +30,10 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+@Getter
 @AllArgsConstructor
 public final class EssentialCommand extends BaseCommand {
-    @Getter public final CXService service;
+    public final CXService service;
 
     @CommandAlias("world")
     @CommandPermission(CXPermissions.CX_MOD)
@@ -59,17 +63,25 @@ public final class EssentialCommand extends BaseCommand {
 
         if (raw) {
             final String trimmed = message.substring(3);
-            Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', trimmed));
+            Bukkit.broadcast(service.getPlugin().getMiniMessage().deserialize(trimmed));
             return;
         }
 
         if (asPlayer) {
             final String trimmed = message.substring(3);
-            Bukkit.broadcastMessage(ChatColor.LIGHT_PURPLE + "[" + ChatColor.DARK_RED + sender.getName() + ChatColor.LIGHT_PURPLE + "] " + trimmed);
+            final Component senderComponent = Component.text("[", NamedTextColor.GRAY)
+                            .append(Component.text(sender.getName(), NamedTextColor.DARK_RED))
+                                    .append(Component.text("]", NamedTextColor.GRAY))
+                                            .appendSpace();
+
+            Bukkit.broadcast(senderComponent.append(Component.text(trimmed, NamedTextColor.RED)));
             return;
         }
 
-        Bukkit.broadcastMessage(ChatColor.LIGHT_PURPLE + "[" + ChatColor.DARK_RED + "Admin" + ChatColor.LIGHT_PURPLE + "] " + message);
+        Bukkit.broadcast(Component.text("[", NamedTextColor.GRAY)
+                .append(Component.text("Staff", NamedTextColor.DARK_RED))
+                .append(Component.text("]", NamedTextColor.GRAY))
+                .appendSpace().append(Component.text(message, NamedTextColor.RED)));
     }
 
     @CommandAlias("rename")
@@ -80,20 +92,22 @@ public final class EssentialCommand extends BaseCommand {
         final ItemStack hand = player.getInventory().getItemInMainHand();
 
         if (hand.getType().equals(Material.AIR)) {
-            player.sendMessage(ChatColor.RED + "You are not holding an item");
+            player.sendMessage(Component.text("You are not holding an item", NamedTextColor.RED));
             return;
         }
 
         final ItemMeta meta = hand.getItemMeta();
         if (meta == null) {
-            player.sendMessage(ChatColor.RED + "Item does not have any meta data");
+            player.sendMessage(Component.text("Item does not have any metadata", NamedTextColor.RED));
             return;
         }
 
-        meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', name));
+        Component deserializedName = service.getPlugin().getMiniMessage().deserialize(name).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE);
+        meta.displayName(deserializedName);
         hand.setItemMeta(meta);
 
-        player.sendMessage(ChatColor.YELLOW + "Item has been renamed to " + ChatColor.translateAlternateColorCodes('&', name));
+        player.sendMessage(Component.text("Item has been renamed to")
+                .appendSpace().append(deserializedName));
     }
 
     @CommandAlias("repair")

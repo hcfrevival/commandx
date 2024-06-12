@@ -152,6 +152,24 @@ public final class KnockbackModule implements ICXModule, Listener {
     }
 
     /**
+     * Overwrites Knockback Resistance
+     * Attributes when a player is attacked
+     * @param event EntityDamageByEntityEvent
+     */
+    @EventHandler
+    public void onEntityDamage(EntityDamageByEntityEvent event) {
+        if (!(event.getEntity() instanceof Player player)) {
+            return;
+        }
+
+        for (AttributeModifier attr : Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE)).getModifiers()) {
+            if (player.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE) != null) {
+                Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE)).removeModifier(attr);
+            }
+        }
+    }
+
+    /**
      * Handles overwriting knockback velocity and sending the velocity packet immediately to prevent lag compensation
      * @param event PlayerDamagePlayerEvent
      */
@@ -163,12 +181,6 @@ public final class KnockbackModule implements ICXModule, Listener {
 
         final Player damaged = event.getDamaged();
         final Player damager = event.getDamager();
-
-        for (AttributeModifier attr : Objects.requireNonNull(damaged.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE)).getModifiers()) {
-            if (damaged.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE) != null) {
-                Objects.requireNonNull(damaged.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE)).removeModifier(attr);
-            }
-        }
 
         if (damaged.getUniqueId().equals(damager.getUniqueId())) {
             return;
