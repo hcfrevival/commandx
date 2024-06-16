@@ -1,0 +1,130 @@
+items:
+  item-velocity:
+    enabled: true
+    values:
+      enderpearl: 1.5
+      potions: 0.5
+  item-modifications:
+    disable-chorus-fruit-teleport: false
+    disable-fishing-players: true
+    disable-shields: false
+    disable-crossbow-fireworks: true
+    disable-spectral-multishot: true
+    fortune-affects-ancient-debris: true
+  item-balance:
+    axe-damage-reduction:
+      enabled: true
+      reduction: 0.5
+    trident-damage-reduction:
+      enabled: true
+      reduction: 0.5
+    mace-damage-reduction:
+      enabled: true
+      reduction: 0.25
+      max-damage: 30.0
+    elytra:
+      remove-on-projectile-damage: true
+      disable-elytra-bhop:
+        enabled: true
+        bhop-max-vl: 3
+        bhop-vl-reset: 30
+    global-durability-reduction:
+      enabled: true
+      modifier: 2
+
+combat:
+  potion-precision:
+    enabled: true
+    min-threshold: 0.6
+    added-precision: 0.3
+  health-regeneration:
+    enabled: true
+    heal-rate: 3
+  knockback:
+    enabled: true
+    modifiers:
+      horizontal: 0.35
+      vertical: 0.35
+      vertical_limit: 0.4
+      extra-horizontal: 0.425
+      extra-vertical: 0.085
+      sprint-reset-multiplier: 1.0
+      sprint-multiplier: 0.5
+  attack-animation:
+    enabled: true
+    no-damage-ticks: 9
+
+world:
+  disable-enderchests: true
+  disable-entity-block-modification: true
+  disable-explosive-exploits: true
+  disable-egg-change-spawners: true
+  disable-enderpearl-clipping: true
+  nerf-explosive-damage:
+    enabled: true
+    reduction-modifier: 0.5
+  allow-pearling-through-traps: true
+  generate-nether-portal-platforms: true
+  disable-breaking-spawner-types:
+    - 'BLAZE'
+  disable-entity-spawning-types:
+    - 'PHANTOM'
+    - 'ENDERMITE'
+  exp-bonuses:
+    enabled: true
+    modifiers:
+      fortune: 2.5
+      looting: 3.0
+  enchantment-limits:
+    enabled: true
+    modifiers:
+      KNOCKBACK: 0
+  potion-limits:
+    enabled: true
+    modifiers:
+      instant_damage:
+        disabled: true
+        amplifiable: false
+        extendable: false
+        can_splash: false
+
+mob-stacker:
+  enabled: true
+  stack-interval: 5
+  stack-search-radius: 3
+  max-stack-size: 300
+  breeding-cooldown: 30
+  stack-nameplate-prefix: '<gold>x'
+  stackable-types:
+    - SKELETON
+    - ZOMBIE
+    - SPIDER
+    - CAVE_SPIDER
+    - COW
+    - CHICKEN
+    - PIG
+    - COD
+    - SALMON
+    - GLOW_SQUID
+    - RABBIT
+    - PUFFERFISH
+    - SHEEP
+    - SQUID
+    - GLOW_SQUID
+    - TADPOLE
+    - TROPICAL_FISH
+    - TURTLE
+    - BOGGED
+
+chat:
+  disable-connection-messages: true
+  rate-limit:
+    enabled: true
+    cooldown: 3
+
+display:
+  tablist:
+    header:
+      - '<b><dark_red>Revival Network'
+    footer:
+      - '<b><aqua>play.hcfrevival.net'
