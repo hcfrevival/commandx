@@ -71,6 +71,7 @@ items:
     disable_crossbow_fireworks: true
     disable_spectral_multishot: true
     milk_excludes_infinite_effects: true
+    fortune_affects_ancient_debris: true
     reduce_axe_damage:
       enabled: true
       reduction: 0.5

@@ -3,11 +3,13 @@ package gg.hcfactions.cx.modules.player.items;
 import gg.hcfactions.cx.CXPermissions;
 import gg.hcfactions.cx.CXService;
 import gg.hcfactions.cx.modules.ICXModule;
+import gg.hcfactions.libs.bukkit.builder.impl.ItemBuilder;
 import lombok.Getter;
 import lombok.Setter;
 import net.kyori.adventure.text.Component;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.damage.DamageSource;
 import org.bukkit.damage.DamageType;
@@ -19,16 +21,20 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 
-public class ItemModificationModule implements ICXModule, Listener {
+import java.util.Random;
+
+public final class ItemModificationModule implements ICXModule, Listener {
     @Getter public final CXService service;
     @Getter public final String key;
     @Getter @Setter public boolean enabled;
+    @Getter private Random random;
 
     private boolean disableChorusFruitTeleport;
     private boolean disableFishingPlayers;
@@ -43,11 +49,13 @@ public class ItemModificationModule implements ICXModule, Listener {
     private boolean reduceMaceDamage;
     private double reduceMaceDamagePercent;
     private double maxMaceDamage;
+    private boolean fortuneAffectsAncientDebris;
 
     public ItemModificationModule(CXService service) {
         this.service = service;
         this.key = "items.modifications.";
         this.enabled = false;
+        this.random = new Random();
     }
 
     @Override
@@ -82,6 +90,7 @@ public class ItemModificationModule implements ICXModule, Listener {
         this.reduceMaceDamage = conf.getBoolean(getKey() + "reduce_mace_damage.enabled");
         this.reduceMaceDamagePercent = conf.getDouble(getKey() + "reduce_mace_damage.reduction");
         this.maxMaceDamage = conf.getDouble(getKey() + "reduce_mace_damage.max_damage");
+        this.fortuneAffectsAncientDebris = conf.getBoolean(getKey() + "fortune_affects_ancient_debris", false);
     }
 
     @Override
@@ -333,5 +342,38 @@ public class ItemModificationModule implements ICXModule, Listener {
         if (reduceTridentDamage && player.getInventory().getItemInMainHand().getType().equals(Material.TRIDENT)) {
             event.setDamage(event.getDamage() * reduceTridentDamagePercent);
         }
+    }
+
+    @EventHandler
+    public void onBlockBreak(BlockBreakEvent event) {
+        if (!isEnabled() || !fortuneAffectsAncientDebris) {
+            return;
+        }
+
+        Block block = event.getBlock();
+        Player player = event.getPlayer();
+
+        if (!block.getType().equals(Material.ANCIENT_DEBRIS)) {
+            return;
+        }
+
+        ItemStack hand = player.getInventory().getItemInMainHand();
+
+        if (!hand.hasItemMeta() || !hand.getItemMeta().hasEnchant(Enchantment.FORTUNE)) {
+            return;
+        }
+
+        int fortuneLevel = hand.getEnchantmentLevel(Enchantment.FORTUNE);
+        int extraDrops = 0;
+
+        for (int i = 0; i < fortuneLevel; i++) {
+            if (random.nextInt(100) < 33) {
+                extraDrops++;
+            }
+        }
+
+        ItemStack item = new ItemBuilder().setMaterial(Material.NETHERITE_SCRAP).setAmount(1 + extraDrops).build();
+        event.setDropItems(false);
+        block.getWorld().dropItemNaturally(block.getLocation(), item);
     }
 }
